@@ -3,6 +3,10 @@ import { ref, reactive } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import type { Role } from '@/stores/auth'
+
+// 登录成功后，把 token 和 role 存进 auth.ts 的 store
+// 这样整个应用的其他组件都能知道用户是谁、角色是什么
+
 import { 
   ElForm, ElFormItem, ElInput, ElButton, ElRadioGroup, ElRadio, 
   ElDialog, ElMessage, ElTabPane, ElTabs 

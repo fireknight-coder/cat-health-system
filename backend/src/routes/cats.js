@@ -50,7 +50,7 @@ router.get('/list', authenticateToken, async (req, res) => {
       console.log(`用户 ${user.username} (${user.role}) 访问猫咪列表`);
     }
 
-    // 猫咪数据（后续可以连接到数据库）
+    // 猫咪数据
     const cats = [
       { 
         id: 1, 
