@@ -39,6 +39,7 @@ const router = createRouter({
         { path: 'interventions', name: 'InterventionList', component: () => import('@/views/admin/InterventionList.vue') },
         { path: 'interventions/:id', name: 'InterventionDetail', component: () => import('@/views/admin/InterventionDetail.vue') },
         { path: 'adoptions', name: 'AdoptionManage', component: () => import('@/views/admin/AdoptionManage.vue') },
+        { path: 'review', name: 'AdminReview', component: () => import('@/views/admin/AdminReview.vue'), meta: { role: 'superadmin' as Role } },
       ],
     },
     { path: '/:pathMatch(.*)*', name: 'NotFound', redirect: '/' },
@@ -47,11 +48,35 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
   const auth = useAuthStore()
+  
+  // 公共路由直接放行
   if (to.meta.public) return next()
+  
+  // 未登录用户重定向到登录页
   if (!auth.isLoggedIn) return next({ name: 'Login', query: { redirect: to.fullPath } })
+  
   const requiredRole = to.meta.role as Role | undefined
-  if (requiredRole === 'admin' && !auth.isAdmin) return next('/')
-  if (requiredRole === 'user' && !auth.isUser) return next('/admin')
+  
+  // 如果没有角色要求，直接放行
+  if (!requiredRole) return next()
+  
+  // 检查角色权限（超级管理员可以访问所有管理功能）
+  if (requiredRole === 'superadmin' && !auth.isSuperAdmin) {
+    // 超级管理员权限不足，重定向到管理员首页
+    return next('/admin')
+  }
+  
+  if (requiredRole === 'admin' && !auth.isAdmin) {
+    // 管理员权限不足，重定向到用户首页
+    return next('/')
+  }
+  
+  if (requiredRole === 'user' && !auth.isUser) {
+    // 用户权限不足，重定向到管理员首页
+    return next('/admin')
+  }
+  
+  // 权限检查通过
   next()
 })
 
