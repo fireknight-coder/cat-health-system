@@ -1,3 +1,4 @@
+//医疗干预和救助处理
 import request from '@/api/request'
 
 export interface InterventionItem {

@@ -1,5 +1,7 @@
+//居民发现猫的整个流程
 import request from '@/api/request'
 
+//创建居民提交的报告数据表单
 export interface ReportCreatePayload {
   mediaUrls: string[]
   lat?: number
@@ -36,11 +38,11 @@ export function getReportList(params?: { status?: string; page?: number; pageSiz
 export function getReportById(id: string) {
   return request.get<ReportItem>(`/reports/${id}`)
 }
-
+//匹配已有的猫
 export function approveMatchExisting(reportId: string, catId: string) {
   return request.post(`/reports/${reportId}/approve-match`, { catId })
 }
-
+//创建新猫
 export function approveNewCat(reportId: string) {
   return request.post<{ catId: string }>(`/reports/${reportId}/approve-new`)
 }

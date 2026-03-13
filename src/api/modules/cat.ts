@@ -1,3 +1,5 @@
+
+//这里放猫档案的
 import request from '@/api/request'
 
 export interface CatItem {
@@ -19,11 +21,11 @@ export function getCatList(params?: { status?: string; page?: number; pageSize?:
 export function getCatById(id: string) {
   return request.get<CatItem>(`/cats/${id}`)
 }
-
+//更新
 export function updateCat(id: string, data: Partial<Pick<CatItem, 'name' | 'status'>>) {
   return request.patch(`/cats/${id}`, data)
 }
-
+//获取可领养之猫
 export function getAdoptableCats(params?: { page?: number; pageSize?: number }) {
   return request.get<{ list: CatItem[]; total: number }>('/cats/adoptable', { params })
 }
