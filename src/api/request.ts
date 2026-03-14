@@ -5,7 +5,7 @@ import { installMock } from '@/api/mock'
 
 //创造专用请求对象，所有请求统一管理
 const request = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE ?? '/api',
+  baseURL: import.meta.env.VITE_API_BASE ?? 'http://localhost:3002/api',
   timeout: 15000,
 })
 
