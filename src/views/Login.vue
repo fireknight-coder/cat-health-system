@@ -93,18 +93,28 @@ const API_BASE_URL = 'http://localhost:3002/api'
 
 // 修改注册API调用
 async function registerApi(userData: any) {
-  const response = await fetch(`${API_BASE_URL}/auth/register`, {
+  // 区分普通用户注册和管理员注册
+  const isAdmin = role.value === 'admin'
+  const apiUrl = isAdmin ? `${API_BASE_URL}/auth/register-admin` : `${API_BASE_URL}/auth/register`
+  
+  const requestBody: any = {
+    username: userData.username,
+    email: userData.email,
+    password: userData.password
+  }
+  
+  // 管理员注册需要额外参数
+  if (isAdmin) {
+    requestBody.adminKey = 'ADMIN_SECRET_2024'
+    requestBody.reason = userData.reason
+  }
+  
+  const response = await fetch(apiUrl, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify({
-      username: userData.username,
-      email: userData.email,
-      password: userData.password,
-      role: role.value,
-      reason: role.value === 'admin' ? userData.reason : undefined
-    })
+    body: JSON.stringify(requestBody)
   })
   
   if (!response.ok) {
@@ -201,13 +211,17 @@ async function handleRegister() {
     
     if (response.success) {
       if (role.value === 'admin') {
+        // 管理员注册需要超级管理员审核，不能登录
         ElMessage.success('管理员申请已提交，等待超级管理员审批')
+        // 停留在登录页，让用户知道需要等待审核
+        activeTab.value = 'login'
+        loginForm.username = registerForm.username
       } else {
+        // 普通用户注册成功，提示登录
         ElMessage.success('注册成功，请登录')
+        activeTab.value = 'login'
+        loginForm.username = registerForm.username
       }
-      activeTab.value = 'login'
-      // 将注册的用户名填入登录表单
-      loginForm.username = registerForm.username
     } else {
       throw new Error(response.error || '注册失败')
     }

@@ -117,7 +117,6 @@ async function rejectAdmin(applicantId: string) {
 }
 
 // 格式化日期
-// @ts-ignore - 在模板中使用
 function formatDate(dateString: string) {
   return new Date(dateString).toLocaleString('zh-CN')
 }
@@ -125,10 +124,10 @@ function formatDate(dateString: string) {
 onMounted(async () => {
   try {
     const res = await getDashboardStats()
-    // 修复类型转换错误：Axios响应对象包含data属性
-    stats.value = res.data as DashboardStats
+    if (res && res.data) {
+      stats.value = res.data
+    }
     
-    // 如果是管理员，获取待审核申请
     if (isAdmin.value) {
       await fetchPendingAdmins()
     }
@@ -138,5 +137,76 @@ onMounted(async () => {
     loading.value = false
   }
 })
-
 </script>
+
+<template>
+  <div class="dashboard-container">
+    <h2>数据仪表盘</h2>
+    
+    <div v-if="loading" class="loading">
+      数据加载中...
+    </div>
+    
+    <div v-else-if="stats" class="stats-container">
+      <div class="stat-card">
+        <h3>猫咪统计</h3>
+        <p>总猫咪数: {{ stats.totalCats || 0 }}</p>
+        <p>健康猫咪: {{ stats.healthyCats || 0 }}</p>
+        <p>可领养: {{ stats.adoptableCats || 0 }}</p>
+      </div>
+      
+      <div class="stat-card">
+        <h3>上报统计</h3>
+        <p>总上报数: {{ stats.totalReports || 0 }}</p>
+        <p>待审核: {{ stats.pendingReports || 0 }}</p>
+      </div>
+      
+      <div class="stat-card">
+        <h3>干预统计</h3>
+        <p>总干预数: {{ stats.totalInterventions || 0 }}</p>
+        <p>进行中: {{ stats.activeInterventions || 0 }}</p>
+      </div>
+      
+      <div class="stat-card">
+        <h3>领养统计</h3>
+        <p>总申请数: {{ stats.totalAdoptions || 0 }}</p>
+        <p>待审核: {{ stats.pendingAdoptions || 0 }}</p>
+      </div>
+    </div>
+    
+    <div v-else class="no-data">
+      暂无数据
+    </div>
+  </div>
+</template>
+
+<style scoped>
+.dashboard-container {
+  padding: 20px;
+}
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+.stat-card {
+  background: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.stat-card h3 {
+  margin-bottom: 15px;
+  color: #333;
+}
+.stat-card p {
+  margin: 8px 0;
+  color: #666;
+}
+.loading, .no-data {
+  text-align: center;
+  padding: 40px;
+  color: #999;
+}
+</style>

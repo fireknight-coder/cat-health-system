@@ -28,25 +28,25 @@ export interface ReportItem {
 }
 
 export function createReport(data: ReportCreatePayload) {
-  return request.post<{ id: string }>('/reports', data)
+  return request.post<{ id: string }>('/report', data)
 }
 
 export function getReportList(params?: { status?: string; page?: number; pageSize?: number }) {
-  return request.get<{ list: ReportItem[]; total: number }>('/reports', { params })
+  return request.get<{ list: ReportItem[]; total: number }>('/report', { params })
 }
 
 export function getReportById(id: string) {
-  return request.get<ReportItem>(`/reports/${id}`)
+  return request.get<ReportItem>(`/report/${id}`)
 }
-//匹配已有的猫
+
 export function approveMatchExisting(reportId: string, catId: string) {
-  return request.post(`/reports/${reportId}/approve-match`, { catId })
+  return request.post(`/report/${reportId}/approve-match`, { catId })
 }
-//创建新猫
+
 export function approveNewCat(reportId: string) {
-  return request.post<{ catId: string }>(`/reports/${reportId}/approve-new`)
+  return request.post<{ catId: string }>(`/report/${reportId}/approve-new`)
 }
 
 export function rejectReport(reportId: string, reason?: string) {
-  return request.post(`/reports/${reportId}/reject`, { reason })
+  return request.post(`/report/${reportId}/reject`, { reason })
 }

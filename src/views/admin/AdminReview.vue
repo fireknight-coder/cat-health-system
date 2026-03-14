@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import request from '@/api/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 定义申请数据类型
@@ -67,20 +68,12 @@ const approveApplication = async (applicantId: string) => {
       inputPlaceholder: '请输入批准意见（可选）...'
     })
 
-    const response = await fetch(`http://localhost:3002/api/admin/applications/${applicantId}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${auth.token}`
-      },
-      body: JSON.stringify({
-        action: 'approve',
-        comment: comment || '申请已批准'
-      })
+    const result = await request.post('/auth/review-admin', {
+      applicantId,
+      action: 'approve',
+      comment: comment || '申请已批准'
     })
 
-    const result = await response.json()
-    
     if (result.success) {
       ElMessage.success('申请已批准')
       await refreshData()
@@ -108,7 +101,7 @@ const rejectApplication = async (applicantId: string) => {
       }
     })
 
-    const response = await fetch(`http://localhost:3002/api/admin/applications/${applicantId}`, {
+    const response = await fetch(`http://localhost:3002/api/auth/review-admin`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -141,7 +134,7 @@ const refreshData = async () => {
 
   try {
     // 获取待审核申请
-    const pendingResponse = await fetch('http://localhost:3002/api/admin/applications', {
+    const pendingResponse = await fetch('http://localhost:3002/api/auth/pending-admins', {
       headers: { 'Authorization': `Bearer ${auth.token}` }
     })
     
@@ -152,8 +145,8 @@ const refreshData = async () => {
     const pendingResult = await pendingResponse.json()
     
     if (pendingResult.success) {
-      pendingApplications.value = pendingResult.data
-      stats.pending = pendingResult.data.length
+      pendingApplications.value = pendingResult.data.applicants || []
+      stats.pending = pendingResult.data.count || 0
       
       // 更新统计数据
       stats.approved = 0 // 这里需要从后端获取已批准的数量
@@ -273,7 +266,7 @@ onMounted(() => {
       </div>
 
       <div v-else-if="activeTab === 'pending'" class="applications-list">
-        <div v-for="app in pendingApplications" :key="app.id" class="application-item">
+        <div v-for="app in pendingApplications" :key="app._id" class="application-item">
           <div class="applicant-info">
             <div class="applicant-header">
               <el-avatar :size="40" :src="app.avatar || '/default-avatar.png'"></el-avatar>
@@ -291,10 +284,10 @@ onMounted(() => {
           </div>
           
           <div class="review-actions">
-            <el-button type="success" @click="approveApplication(app.id)" size="small">
+            <el-button type="success" @click="approveApplication(app._id)" size="small">
               ✅ 批准
             </el-button>
-            <el-button type="danger" @click="rejectApplication(app.id)" size="small">
+            <el-button type="danger" @click="rejectApplication(app._id)" size="small">
               ❌ 拒绝
             </el-button>
             <el-button type="info" @click="viewDetails(app)" size="small">

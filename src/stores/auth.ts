@@ -2,7 +2,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
-export type Role = 'user' | 'admin' | 'superadmin'
+export type Role = 'user' | 'admin' | 'superadmin' | 'pending_admin'
 
 export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('token'))
@@ -11,8 +11,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isLoggedIn = computed(() => !!token.value)
   const isAdmin = computed(() => role.value === 'admin' || role.value === 'superadmin')
-  const isUser = computed(() => role.value === 'user')
+  const isUser = computed(() => role.value === 'user' || role.value === 'pending_admin')
   const isSuperAdmin = computed(() => role.value === 'superadmin')
+  const isPendingAdmin = computed(() => role.value === 'pending_admin')
 
   function login(t: string, r: Role, id: string) {
     token.value = t

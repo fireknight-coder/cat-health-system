@@ -15,17 +15,17 @@ export interface LocationPoint {
 }
 //绑定设备
 export function bindDevice(petId: string, deviceId: string) {
-  return request.post('/devices/bind', { petId, deviceId })
+  return request.post('/device/bind', { petId, deviceId })
 }
-//查询猫绑定设备
+
 export function getDeviceByPet(petId: string) {
-  return request.get<DeviceItem>(`/devices/by-pet/${petId}`)
+  return request.get<DeviceItem>(`/device/by-pet/${petId}`)
 }
-//位置历史，形成区域路线图
+
 export function getLocationHistory(petId: string, params?: { start?: string; end?: string }) {
   return request.get<{ points: LocationPoint[] }>(`/pets/${petId}/location-history`, { params })
 }
-//警报
+
 export function getAlerts(petId: string, params?: { page?: number; pageSize?: number }) {
   return request.get<{ list: { id: string; type: string; time: string; message: string }[]; total: number }>(`/pets/${petId}/alerts`, { params })
 }

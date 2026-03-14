@@ -43,7 +43,7 @@ export const authenticateToken = async (req, res, next) => {
 
 // 管理员权限检查
 export const requireAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+  if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
     return res.status(403).json({
       success: false,
       error: '需要管理员权限'

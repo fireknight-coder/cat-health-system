@@ -2,6 +2,7 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { User } from '../models/User.js';
+import { authenticateToken, requireAdmin } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -124,6 +125,14 @@ router.post('/login', async (req, res) => {
       });
     }
 
+    // 检查是否是待审核的管理员
+    if (user.role === 'pending_admin') {
+      return res.status(403).json({
+        success: false,
+        error: '您的管理员申请正在等待超级管理员审核，审核通过后才能登录管理端'
+      });
+    }
+
     // 更新最后登录时间
     user.lastLogin = new Date();
     await user.save();
@@ -221,7 +230,7 @@ router.get('/', (req, res) => {
 // 管理员注册（需要管理员密钥）
 router.post('/register-admin', async (req, res) => {
   try {
-    const { username, email, password, adminKey } = req.body;
+    const { username, email, password, adminKey, reason } = req.body;
 
     console.log('管理员注册请求:', { username, email });
 
@@ -253,18 +262,20 @@ router.post('/register-admin', async (req, res) => {
       });
     }
 
-    // 创建管理员用户
+    // 创建管理员用户（设置为待审核状态，需要超级管理员审核）
     const user = new User({
       username,
       email,
       password,
-      role: 'admin'  // 设置为管理员角色
+      role: 'pending_admin',  // 改为待审核状态
+      adminApplication: {
+        appliedAt: new Date(),
+        status: 'pending',
+        reason: reason || '通过管理员密钥注册'
+      }
     });
 
     await user.save();
-
-    // 生成令牌
-    const token = generateToken(user._id);
 
     res.status(201).json({
       success: true,
@@ -275,9 +286,8 @@ router.post('/register-admin', async (req, res) => {
           email: user.email,
           role: user.role
         },
-        token
-      },
-      message: '管理员注册成功'
+        message: '管理员注册成功，等待超级管理员审核'
+      }
     });
   } catch (error) {
     console.error('管理员注册错误:', error);
@@ -354,7 +364,7 @@ router.post('/apply-admin', async (req, res) => {
 });
 
 // 管理员审核接口（需要管理员权限）
-router.post('/review-admin', async (req, res) => {
+router.post('/review-admin', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { applicantId, action, comment } = req.body; // action: 'approve' 或 'reject'
     const reviewerId = req.user?.id; // 从认证中间件获取审核人ID
@@ -429,7 +439,7 @@ router.post('/review-admin', async (req, res) => {
 });
 
 // 获取待审核的管理员申请列表（需要管理员权限）
-router.get('/pending-admins', async (req, res) => {
+router.get('/pending-admins', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const pendingAdmins = await User.find({ 
       role: 'pending_admin',
