@@ -452,4 +452,4 @@ router.get('/pending-admins', async (req, res) => {
   }
 });
 
-export const authRouter = router;
+export default router;
