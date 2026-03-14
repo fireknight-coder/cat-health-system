@@ -14,17 +14,32 @@ export interface ReportCreatePayload {
 export interface ReportItem {
   id: string
   status: string
-  mediaUrls: string[]
-  lat?: number
-  lng?: number
-  address?: string
-  reportedAt: string
+  type?: string
+  description?: string
+  images?: string[]
+  videos?: string[]
+  location?: {
+    lat: number
+    lng: number
+    address?: string
+  }
+  reportedAt?: string
   remark?: string
-  reporterId?: string
-  aiTopK?: { catId: string; similarity: number; avatar?: string }[]
-  healthScore?: number
-  riskLevel?: string
+  reporterId?: { id?: string; username?: string }
+  catId?: string
+  // AI处理相关
+  aiProcessed?: boolean
+  aiEmbedding?: number[]
+  aiHealthScore?: number
+  aiRiskLevel?: string
+  aiTopK?: { catId: { _id?: string; name?: string }; similarity: number; avatar?: string }[]
+  aiHealthNotes?: string
+  // 审核相关
+  adminNotes?: string
+  rejectReason?: string
+  processedAt?: string
   createdAt: string
+  updatedAt?: string
 }
 
 export function createReport(data: ReportCreatePayload) {
@@ -39,12 +54,20 @@ export function getReportById(id: string) {
   return request.get<ReportItem>(`/report/${id}`)
 }
 
-export function approveMatchExisting(reportId: string, catId: string) {
-  return request.post(`/report/${reportId}/approve-match`, { catId })
+export function approveMatchExisting(reportId: string, catId: string, adminNotes?: string) {
+  return request.post(`/report/${reportId}/approve-match`, { catId, adminNotes })
 }
 
-export function approveNewCat(reportId: string) {
-  return request.post<{ catId: string }>(`/report/${reportId}/approve-new`)
+export function approveNewCat(reportId: string, catData?: {
+  name?: string
+  age?: number
+  gender?: string
+  breed?: string
+  color?: string
+  healthNotes?: string
+  adminNotes?: string
+}) {
+  return request.post(`/report/${reportId}/approve-new`, catData || {})
 }
 
 export function rejectReport(reportId: string, reason?: string) {

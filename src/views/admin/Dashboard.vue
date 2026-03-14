@@ -116,16 +116,12 @@ async function rejectAdmin(applicantId: string) {
   }
 }
 
-// 格式化日期
-function formatDate(dateString: string) {
-  return new Date(dateString).toLocaleString('zh-CN')
-}
-
 onMounted(async () => {
   try {
     const res = await getDashboardStats()
-    if (res && res.data) {
-      stats.value = res.data
+    const resData = res as any
+    if (resData && resData.data) {
+      stats.value = resData.data as DashboardStats
     }
     
     if (isAdmin.value) {

@@ -13,7 +13,6 @@ export const useAuthStore = defineStore('auth', () => {
   const isAdmin = computed(() => role.value === 'admin' || role.value === 'superadmin')
   const isUser = computed(() => role.value === 'user' || role.value === 'pending_admin')
   const isSuperAdmin = computed(() => role.value === 'superadmin')
-  const isPendingAdmin = computed(() => role.value === 'pending_admin')
 
   function login(t: string, r: Role, id: string) {
     token.value = t
@@ -39,10 +38,11 @@ export const useAuthStore = defineStore('auth', () => {
 
   // 权限检查函数
   function hasPermission(requiredRole: Role): boolean {
-    const roleHierarchy = {
+    const roleHierarchy: Record<Role, number> = {
       'user': 1,
       'admin': 2,
-      'superadmin': 3
+      'superadmin': 3,
+      'pending_admin': 1
     }
     
     return roleHierarchy[role.value] >= roleHierarchy[requiredRole]

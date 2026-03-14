@@ -8,6 +8,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 // 定义申请数据类型
 interface Application {
   id: string
+  _id: string
   username: string
   email: string
   avatar?: string
@@ -16,6 +17,14 @@ interface Application {
   updatedAt: string
   status?: string
   isActive?: boolean
+  adminApplication?: {
+    appliedAt?: string
+    reason?: string
+    status?: string
+    reviewedAt?: string
+    reviewedBy?: string
+    reviewComment?: string
+  }
 }
 
 const auth = useAuthStore()
@@ -68,7 +77,7 @@ const approveApplication = async (applicantId: string) => {
       inputPlaceholder: '请输入批准意见（可选）...'
     })
 
-    const result = await request.post('/auth/review-admin', {
+    const result: any = await request.post('/auth/review-admin', {
       applicantId,
       action: 'approve',
       comment: comment || '申请已批准'
@@ -102,12 +111,13 @@ const rejectApplication = async (applicantId: string) => {
     })
 
     const response = await fetch(`http://localhost:3002/api/auth/review-admin`, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${auth.token}`
       },
       body: JSON.stringify({
+        applicantId,
         action: 'reject',
         comment: comment.trim()
       })
@@ -147,18 +157,32 @@ const refreshData = async () => {
     if (pendingResult.success) {
       pendingApplications.value = pendingResult.data.applicants || []
       stats.pending = pendingResult.data.count || 0
+    }
+    
+    // 获取统计数据
+    try {
+      const statsResponse = await fetch('http://localhost:3002/api/auth/admin-stats', {
+        headers: { 'Authorization': `Bearer ${auth.token}` }
+      })
+      const statsResult = await statsResponse.json()
       
-      // 更新统计数据
-      stats.approved = 0 // 这里需要从后端获取已批准的数量
-      stats.rejected = 0 // 这里需要从后端获取已拒绝的数量
-      stats.totalAdmins = 0 // 这里需要从后端获取总管理员数量
-      stats.pendingChange = 0
-      stats.approvalRate = 0
-      stats.rejectionRate = 0
-      stats.activeAdmins = 0
-      
-      console.log('🔍 获取到的待审核申请:', pendingResult.data)
-    } else {
+      if (statsResult.success) {
+        stats.approved = statsResult.data.approved || 0
+        stats.rejected = statsResult.data.rejected || 0
+        stats.totalAdmins = statsResult.data.totalAdmins || 0
+        stats.activeAdmins = statsResult.data.activeAdmins || 0
+        stats.approvalRate = statsResult.data.approvalRate || 0
+        stats.rejectionRate = statsResult.data.rejectionRate || 0
+        stats.pendingChange = 0
+        console.log('🔍 统计数据:', statsResult.data)
+      } else {
+        console.error('获取统计数据失败:', statsResult.error)
+      }
+    } catch (statsError) {
+      console.error('获取统计数据失败:', statsError)
+    }
+    
+    if (!pendingResult.success) {
       console.error('获取待审核申请失败:', pendingResult.error)
       ElMessage.error('获取申请列表失败')
     }
@@ -169,11 +193,7 @@ const refreshData = async () => {
   }
 }
 
-// 获取审核人姓名
-const getReviewerName = (reviewerId: string) => {
-  // 这里需要根据reviewerId获取审核人姓名
-  return '系统管理员'
-}
+
 
 onMounted(() => {
   if (isSuperAdmin.value) {
@@ -279,7 +299,7 @@ onMounted(() => {
             </div>
             <div class="application-reason">
               <strong>申请理由:</strong>
-              <p>{{ app.reason }}</p>
+              <p>{{ app.adminApplication?.reason || app.reason || '无' }}</p>
             </div>
           </div>
           
@@ -308,7 +328,7 @@ onMounted(() => {
           >
             <el-card>
               <p><strong>{{ item.username }}</strong> ({{ item.email }})</p>
-              <p>申请理由: {{ item.reason }}</p>
+              <p>申请理由: {{ item.adminApplication?.reason || item.reason || '无' }}</p>
               <p>审核时间: {{ formatDate(item.updatedAt) }}</p>
             </el-card>
           </el-timeline-item>
@@ -324,7 +344,7 @@ onMounted(() => {
           <el-descriptions-item label="邮箱">{{ currentApplication.email }}</el-descriptions-item>
           <el-descriptions-item label="申请时间">{{ formatDate(currentApplication.createdAt) }}</el-descriptions-item>
           <el-descriptions-item label="申请理由">
-            <p style="white-space: pre-wrap;">{{ currentApplication.reason }}</p>
+            <p style="white-space: pre-wrap;">{{ currentApplication.adminApplication?.reason || currentApplication.reason || '无' }}</p>
           </el-descriptions-item>
         </el-descriptions>
       </div>

@@ -1,118 +1,79 @@
 import express from 'express';
-import jwt from 'jsonwebtoken';
+import { Cat } from '../models/Cat.js';
 import { authenticateToken } from '../middleware/auth.js';
-import { User } from '../models/User.js';
 
 const router = express.Router();
 
-// 猫咪路由根路径（不需要认证）
-router.get('/', (req, res) => {
-  res.json({
-    success: true,
-    message: '猫咪管理API',
-    version: '1.0.0',
-    endpoints: {
-      getCats: 'GET /api/cats/list (需要认证)',
-      requires: '需要Authorization头部的Bearer token'
-    }
-  });
-});
-
-// 获取所有猫咪（需要认证和权限）
-router.get('/list', authenticateToken, async (req, res) => {
+// 获取猫咪列表
+router.get('/', authenticateToken, async (req, res) => {
   try {
-    // 获取当前用户信息
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    const { page = 1, pageSize = 50, status } = req.query
+    const filter = {}
+    if (status) filter.status = status
     
-    if (!token) {
-      return res.status(401).json({
-        success: false,
-        error: '访问令牌缺失'
-      });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'fallback-secret');
-    const user = await User.findById(decoded.userId);
+    console.log('获取猫咪列表, 用户:', req.user?.username, '角色:', req.user?.role)
     
-    if (!user) {
-      return res.status(401).json({
-        success: false,
-        error: '用户不存在'
-      });
-    }
-
-    // 检查权限：只有管理员和特定居民可以查看猫咪列表
-    if (user.role !== 'admin') {
-      // 这里可以添加更复杂的权限逻辑
-      // 比如检查用户是否是特定猫咪的饲养者
-      // 目前先允许所有认证用户查看，后续可以扩展
-      console.log(`用户 ${user.username} (${user.role}) 访问猫咪列表`);
-    }
-
-    // 猫咪数据
-    const cats = [
-      { 
-        id: 1, 
-        name: '小花', 
-        age: 2, 
-        breed: '橘猫', 
-        location: '小区花园', 
-        healthStatus: 'healthy',
-        caretaker: '张阿姨',
-        caretakerId: 'user123'
-      },
-      { 
-        id: 2, 
-        name: '小黑', 
-        age: 3, 
-        breed: '黑猫', 
-        location: '停车场', 
-        healthStatus: 'needs_care',
-        caretaker: '李大爷',
-        caretakerId: 'user456'
-      },
-      { 
-        id: 3, 
-        name: '小白', 
-        age: 1, 
-        breed: '白猫', 
-        location: '楼道', 
-        healthStatus: 'healthy',
-        caretaker: '王奶奶',
-        caretakerId: 'user789'
-      }
-    ];
-
-    // 如果是普通用户，只返回基本信息
-    // 如果是管理员，返回完整信息
-    let filteredCats = cats;
-    if (user.role !== 'admin') {
-      filteredCats = cats.map(cat => ({
-        id: cat.id,
-        name: cat.name,
-        age: cat.age,
-        breed: cat.breed,
-        location: cat.location,
-        healthStatus: cat.healthStatus
-        // 隐藏饲养者信息
-      }));
-    }
+    const cats = await Cat.find(filter)
+      .limit(parseInt(pageSize))
+      .skip((parseInt(page) - 1) * parseInt(pageSize))
+      .sort({ createdAt: -1 })
+    
+    const total = await Cat.countDocuments(filter)
+    console.log(`找到 ${cats.length} 只猫咪, 总共 ${total} 只`)
+    
+    // 添加id字段别名
+    const catList = cats.map(cat => ({
+      ...cat.toObject(),
+      id: cat._id
+    }))
     
     res.json({
       success: true,
-      data: filteredCats,
-      total: filteredCats.length,
-      userRole: user.role,
-      message: user.role === 'admin' ? '管理员视图：显示完整信息' : '居民视图：显示基本信息'
-    });
+      data: {
+        list: catList,
+        total
+      }
+    })
   } catch (error) {
-    console.error('获取猫咪列表错误:', error);
-    res.status(500).json({
-      success: false,
-      error: '获取猫咪列表失败: ' + error.message
-    });
+    console.error('获取猫咪列表错误:', error)
+    res.status(500).json({ success: false, message: '获取猫咪列表失败' })
   }
-});
+})
+
+// 获取单个猫咪
+router.get('/:id', authenticateToken, async (req, res) => {
+  try {
+    const cat = await Cat.findById(req.params.id)
+    if (!cat) {
+      return res.status(404).json({ success: false, message: '猫咪不存在' })
+    }
+    res.json({
+      success: true,
+      data: {
+        ...cat.toObject(),
+        id: cat._id
+      }
+    })
+  } catch (error) {
+    res.status(500).json({ success: false, message: '获取猫咪详情失败' })
+  }
+})
+
+// 更新猫咪
+router.patch('/:id', authenticateToken, async (req, res) => {
+  try {
+    const cat = await Cat.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    )
+    if (!cat) {
+      return res.status(404).json({ success: false, message: '猫咪不存在' })
+    }
+    res.json({ success: true, data: cat })
+  } catch (error) {
+    res.status(500).json({ success: false, message: '更新猫咪失败' })
+  }
+})
 
 export const catRouter = router;

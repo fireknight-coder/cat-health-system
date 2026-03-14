@@ -22,7 +22,7 @@ export function getCatById(id: string) {
   return request.get<CatItem>(`/cats/${id}`)
 }
 
-export function updateCat(id: string, data: Partial<Pick<CatItem, 'name' | 'status'>>) {
+export function updateCat(id: string, data: Partial<Pick<CatItem, 'name' | 'status' | 'avatar' | 'images' | 'age' | 'gender' | 'breed' | 'color' | 'healthNotes'>>) {
   return request.patch(`/cats/${id}`, data)
 }
 

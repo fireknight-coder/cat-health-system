@@ -1,6 +1,8 @@
 /** 上报记录状态 */
 export const REPORT_STATUS = {
   PENDING_REVIEW: '待审核',
+  AI_PROCESSING: 'AI处理中',
+  AI_PROCESSED: 'AI已处理',
   APPROVED_MATCH_EXISTING: '已匹配老猫',
   APPROVED_NEW_CAT: '已建档新猫',
   REJECTED: '已驳回',
@@ -9,10 +11,12 @@ export type ReportStatus = keyof typeof REPORT_STATUS
 
 /** 猫档案状态 */
 export const CAT_STATUS = {
-  ACTIVE: '在库活跃',
-  UNDER_TREATMENT: '处理中',
+  HEALTHY: '健康',
+  SICK: '生病',
   ADOPTABLE: '可领养',
   ADOPTED: '已领养',
+  UNDER_TREATMENT: '治疗中',
+  MISSING: '失踪',
 } as const
 export type CatStatus = keyof typeof CAT_STATUS
 

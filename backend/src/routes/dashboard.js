@@ -23,10 +23,10 @@ router.get('/stats', async (req, res) => {
       pendingAdoptions
     ] = await Promise.all([
       Cat.countDocuments(),
-      Cat.countDocuments({ status: 'healthy' }),
-      Cat.countDocuments({ status: 'adoptable' }),
+      Cat.countDocuments({ status: 'HEALTHY' }),
+      Cat.countDocuments({ status: 'ADOPTABLE' }),
       Report.countDocuments(),
-      Report.countDocuments({ status: 'new' }),
+      Report.countDocuments({ status: 'PENDING_REVIEW' }),
       Intervention.countDocuments(),
       Intervention.countDocuments({ status: 'in-progress' }),
       Adoption.countDocuments(),

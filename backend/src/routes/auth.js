@@ -462,4 +462,67 @@ router.get('/pending-admins', authenticateToken, requireAdmin, async (req, res) 
   }
 });
 
+// 获取管理员统计数据
+router.get('/admin-stats', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    console.log('获取管理员统计数据...')
+    
+    // 待审核：role为pending_admin且adminApplication.status为pending
+    const pendingCount = await User.countDocuments({ 
+      role: 'pending_admin',
+      'adminApplication.status': 'pending'
+    })
+    console.log('待审核:', pendingCount)
+    
+    // 已批准：role为admin（已经通过审核的用户）
+    const approvedCount = await User.countDocuments({ 
+      role: 'admin'
+    })
+    console.log('已批准:', approvedCount)
+    
+    // 已拒绝：role为user但adminApplication.status为rejected
+    const rejectedCount = await User.countDocuments({ 
+      role: 'user',
+      'adminApplication.status': 'rejected'
+    })
+    console.log('已拒绝:', rejectedCount)
+    
+    // 总管理员（包括普通管理员和超级管理员）
+    const totalAdmins = await User.countDocuments({ 
+      role: { $in: ['admin', 'superadmin'] }
+    })
+    console.log('总管理员:', totalAdmins)
+    
+    // 活跃管理员
+    const activeAdmins = await User.countDocuments({ 
+      role: { $in: ['admin', 'superadmin'] },
+      isActive: true
+    })
+    console.log('活跃管理员:', activeAdmins)
+    
+    const total = approvedCount + rejectedCount
+    const approvalRate = total > 0 ? Math.round((approvedCount / total) * 100) : 0
+    const rejectionRate = total > 0 ? Math.round((rejectedCount / total) * 100) : 0
+    
+    res.json({
+      success: true,
+      data: {
+        pending: pendingCount,
+        approved: approvedCount,
+        rejected: rejectedCount,
+        totalAdmins,
+        activeAdmins,
+        approvalRate,
+        rejectionRate
+      }
+    })
+  } catch (error) {
+    console.error('获取统计数据错误:', error);
+    res.status(500).json({
+      success: false,
+      error: '获取统计数据失败: ' + error.message
+    });
+  }
+});
+
 export default router;

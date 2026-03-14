@@ -13,9 +13,14 @@ const loading = ref(false)
 async function load() {
   loading.value = true
   try {
+    console.log('正在获取待审核上报列表...')
     const res = await getReportList({ status: 'PENDING_REVIEW', pageSize: 50 })
-    list.value = (res as { list: ReportItem[] }).list ?? []
-  } catch {
+    console.log('API响应:', res)
+    const resData = res as any
+    list.value = resData?.data?.list ?? resData?.list ?? []
+    console.log('列表数据:', list.value)
+  } catch (e: any) {
+    console.error('获取列表失败:', e)
     list.value = []
   } finally {
     loading.value = false
