@@ -158,7 +158,7 @@ onMounted(() => {
           <h4>🐱 AI 相似猫候选（Top-K）</h4>
           <div class="topk-list">
             <div v-for="(c, i) in (report as any).aiTopK" :key="c.catId" class="topk-item">
-              <span class="rank">#{{ i + 1 }}</span>
+              <span class="rank">#{{ Number(i) + 1 }}</span>
               <span class="similarity">{{ (Number(c.similarity || 0) * 100).toFixed(1) }}% 相似</span>
               <el-button type="primary" link @click="selectedCatId = c.catId">
                 {{ c.catId?.name || c.catId }}

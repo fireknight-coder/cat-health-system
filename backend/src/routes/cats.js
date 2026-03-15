@@ -40,6 +40,40 @@ router.get('/', authenticateToken, async (req, res) => {
   }
 })
 
+// 获取可领养猫咪列表（状态为ADOPTABLE）
+router.get('/adoptable', async (req, res) => {
+  try {
+    const { page = 1, pageSize = 20 } = req.query
+    const filter = { status: 'ADOPTABLE' }
+    
+    console.log('获取可领养猫咪列表')
+    
+    const cats = await Cat.find(filter)
+      .limit(parseInt(pageSize))
+      .skip((parseInt(page) - 1) * parseInt(pageSize))
+      .sort({ updatedAt: -1 })
+    
+    const total = await Cat.countDocuments(filter)
+    console.log(`找到 ${cats.length} 只可领养猫咪`)
+    
+    const catList = cats.map(cat => ({
+      ...cat.toObject(),
+      id: cat._id
+    }))
+    
+    res.json({
+      success: true,
+      data: {
+        list: catList,
+        total
+      }
+    })
+  } catch (error) {
+    console.error('获取可领养猫咪列表错误:', error)
+    res.status(500).json({ success: false, message: '获取可领养猫咪列表失败' })
+  }
+})
+
 // 获取单个猫咪
 router.get('/:id', authenticateToken, async (req, res) => {
   try {

@@ -1,10 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, reactive } from 'vue'
-import { ElTable, ElTableColumn, ElButton, ElTag, ElDrawer, ElCard, ElEmpty } from 'element-plus'
+import { ElTable, ElTableColumn, ElButton, ElTag, ElDrawer, ElCard, ElEmpty, ElMessage } from 'element-plus'
 import { getCatList, getCatById, updateCat } from '@/api/modules/cat'
 import { getObservations, createObservation, deleteObservation } from '@/api/modules/observation'
 import { getCatStatusLabel } from '@/stores/dictionary'
-import { ElMessage } from 'element-plus'
 import type { CatItem } from '@/api/modules/cat'
 import type { ObservationItem } from '@/api/modules/observation'
 
@@ -35,6 +34,17 @@ const typeOptions = [
   { value: 'incident', label: '事件' }
 ]
 
+const statusOptions = [
+  { value: 'HEALTHY', label: '健康' },
+  { value: 'SICK', label: '生病' },
+  { value: 'ADOPTABLE', label: '可领养' },
+  { value: 'ADOPTED', label: '已领养' },
+  { value: 'UNDER_TREATMENT', label: '治疗中' },
+  { value: 'MISSING', label: '失踪' }
+]
+
+const editStatus = ref('')
+
 function getTypeColor(type: string): 'info' | 'warning' | 'success' | 'danger' {
   const colors: Record<string, 'info' | 'warning' | 'success' | 'danger'> = {
     general: 'info', health: 'warning', behavior: 'success', feeding: 'info', incident: 'danger'
@@ -59,6 +69,7 @@ async function load() {
 async function openDetail(cat: CatItem) {
   currentCat.value = cat
   editName.value = cat.name ?? ''
+  editStatus.value = cat.status ?? 'HEALTHY'
   drawerVisible.value = true
   await Promise.all([loadCatDetail(), loadObservations()])
 }
@@ -92,12 +103,26 @@ async function loadObservations() {
 async function saveName() {
   if (!currentCat.value) return
   try {
-    await updateCat(currentCat.value.id, { name: editName.value })
-    currentCat.value.name = editName.value
-    // 更新列表中的名字
-    const idx = list.value.findIndex(c => c.id === currentCat.value?.id)
+    await updateCat(currentCat.value!.id, { name: editName.value })
+    currentCat.value!.name = editName.value
+    const cid = currentCat.value!.id
+    const idx = list.value.findIndex(c => c.id === cid || (c as any)._id === cid)
     if (idx >= 0) list.value[idx].name = editName.value
     ElMessage.success('已保存')
+  } catch {
+    ElMessage.error('保存失败')
+  }
+}
+
+async function saveStatus() {
+  if (!currentCat.value) return
+  try {
+    await updateCat(currentCat.value!.id, { status: editStatus.value })
+    currentCat.value!.status = editStatus.value
+    const cid = currentCat.value!.id
+    const idx = list.value.findIndex(c => c.id === cid || (c as any)._id === cid)
+    if (idx >= 0) list.value[idx].status = editStatus.value
+    ElMessage.success('状态已更新')
   } catch {
     ElMessage.error('保存失败')
   }
@@ -128,6 +153,35 @@ async function removeObservation(obsId: string) {
     loadObservations()
   } catch {
     console.error('删除失败')
+  }
+}
+
+// 照片上传
+const showPhotoForm = ref(false)
+const newPhotos = ref<string[]>([])
+const photoFileList = ref<any[]>([])
+
+function handlePhotoChange(_file: any, files: any[]) {
+  photoFileList.value = files
+  newPhotos.value = files.map(f => URL.createObjectURL(f.raw))
+}
+
+async function savePhotos() {
+  if (!currentCat.value || newPhotos.value.length === 0) return
+  try {
+    const currentImages = currentCat.value.images || []
+    await updateCat(currentCat.value.id, {
+      images: [...currentImages, ...newPhotos.value],
+      avatar: currentImages.length === 0 ? newPhotos.value[0] : currentCat.value.avatar
+    })
+    currentCat.value.images = [...currentImages, ...newPhotos.value]
+    if (!currentCat.value.avatar) currentCat.value.avatar = newPhotos.value[0]
+    newPhotos.value = []
+    photoFileList.value = []
+    showPhotoForm.value = false
+    ElMessage.success('照片已保存')
+  } catch {
+    ElMessage.error('保存失败')
   }
 }
 
@@ -177,7 +231,35 @@ onMounted(load)
           <div class="info-row">
             <span class="label">ID卡号：</span>
             <span class="cat-id">{{ currentCat ? ((currentCat as any).catId || currentCat.id) : '-' }}</span>
-          </div>
+          </div><!-- 照片区域 -->
+          <div class="photo-section">
+            <div class="photo-header">
+              <span class="label">📷 照片：</span>
+              <el-button size="small" @click="showPhotoForm = !showPhotoForm">{{ showPhotoForm ? '取消' : '+ 添加' }}</el-button>
+            </div>
+            <div v-if="currentCat.images?.length" class="photo-grid">
+              <div v-for="(img, i) in currentCat.images" :key="'img'+i" class="photo-item">
+                <img :src="img" />
+              </div>
+            </div>
+            <el-empty v-else description="暂无照片" :image-size="60" />
+            
+            <div v-if="showPhotoForm" class="photo-upload">
+              <el-upload
+                :auto-upload="false"
+                :on-change="handlePhotoChange"
+                :limit="5"
+                list-type="picture-card"
+                accept="image/*"
+              >
+                <el-button size="small">+ 选择</el-button>
+              </el-upload>
+              <div v-if="newPhotos.length" class="upload-actions">
+                <span>已选 {{ newPhotos.length }} 张</span>
+                <el-button size="small" @click="{ newPhotos = []; photoFileList = [] }">清空</el-button>
+                <el-button type="primary" size="small" @click="savePhotos">保存</el-button>
+              </div>
+            </div>
           <div class="info-row">
             <span class="label">名字：</span>
             <el-input v-model="editName" size="small" style="width: 120px" />
@@ -185,7 +267,9 @@ onMounted(load)
           </div>
           <div class="info-row">
             <span class="label">状态：</span>
-            <el-tag>{{ getCatStatusLabel(currentCat.status as any) }}</el-tag>
+            <el-select v-model="editStatus" size="small" style="width: 100px" @change="saveStatus">
+              <el-option v-for="opt in statusOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+            </el-select>
           </div>
           <div class="info-row">
             <span class="label">健康评分：</span>
@@ -204,6 +288,9 @@ onMounted(load)
           <div class="info-row">
             <span class="label">最后发现：</span>
             <span>{{ currentCat.lastSeenAt || '-' }}</span>
+          </div>
+          
+          
           </div>
         </el-card>
 
@@ -250,14 +337,20 @@ onMounted(load)
 <style scoped>
 .page { background: #fff; padding: 24px; border-radius: 8px; }
 .cat-id { color: #409eff; font-weight: bold; font-family: monospace; }
-.cat-name { display: inline-block; }
-.cat-id, .cat-name { display: inline-block; }
-.cat-name { font-weight: 500; }
+.cat-name { display: inline-block; font-weight: 500; }
 .high-score { color: #67c23a; }
 
 .info-card, .obs-card { margin-bottom: 16px; }
 .info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
 .info-row .label { color: #909399; width: 70px; flex-shrink: 0; }
+
+.photo-section { margin-top: 16px; }
+.photo-header { display: flex; align-items: center; gap: 8px; }
+.photo-grid { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.photo-item { width: 70px; height: 70px; border-radius: 6px; overflow: hidden; }
+.photo-item img { width: 100%; height: 100%; object-fit: cover; }
+.photo-upload { margin-top: 12px; }
+.upload-actions { display: flex; align-items: center; gap: 12px; margin-top: 8px; }
 
 .obs-form { background: #f5f7fa; padding: 12px; border-radius: 8px; margin-bottom: 12px; }
 .obs-form-tools { display: flex; align-items: center; gap: 8px; margin-top: 8px; }

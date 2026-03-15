@@ -49,7 +49,7 @@ import adoptionRoutes from './src/routes/adoption.js'
 import interventionRoutes from './src/routes/intervention.js'
 import reportRoutes from './src/routes/report.js'
 import dashboardRoutes from './src/routes/dashboard.js'
-
+import observationRoutes from './src/routes/observation.js'
 // 路由注册
 app.use('/api/auth', authRoutes)
 app.use('/api/cats', catRoutes)
@@ -57,6 +57,7 @@ app.use('/api/adoption', adoptionRoutes)
 app.use('/api/intervention', interventionRoutes)
 app.use('/api/report', reportRoutes)
 app.use('/api/dashboard', dashboardRoutes)
+app.use('/api/observations', observationRoutes)
 
 // 健康检查
 app.get('/api/health', (req, res) => {

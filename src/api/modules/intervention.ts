@@ -10,8 +10,8 @@ export interface InterventionItem {
   result?: { time?: string; place?: string; cost?: number; measures?: string; photos?: string[]; remark?: string }
 }
 
-export function createIntervention(catId: string, remark?: string) {
-  return request.post<{ id: string }>('/intervention', { catId, remark })
+export function createIntervention(data: { catId: string; type?: string; description?: string; priority?: string }) {
+  return request.post<{ id: string }>('/intervention', data)
 }
 
 export function getInterventionList(params?: { status?: string; catId?: string; page?: number; pageSize?: number }) {

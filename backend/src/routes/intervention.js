@@ -95,4 +95,22 @@ router.patch('/:id/status', async (req, res) => {
   }
 })
 
+// 添加回复
+router.post('/:id/reply', async (req, res) => {
+  try {
+    const { content } = req.body
+    const intervention = await Intervention.findByIdAndUpdate(
+      req.params.id,
+      { $push: { replies: { content, createdBy: req.user?._id } } },
+      { new: true }
+    )
+    if (!intervention) {
+      return res.status(404).json({ success: false, message: '干预记录不存在' })
+    }
+    res.json({ success: true, data: intervention })
+  } catch (error) {
+    res.status(500).json({ success: false, message: '添加回复失败' })
+  }
+})
+
 export default router

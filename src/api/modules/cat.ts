@@ -4,14 +4,23 @@ import request from '@/api/request'
 
 export interface CatItem {
   id: string
+  _id?: string
   name?: string
   status: string
   healthScore?: number
   riskLevel?: string
   avatar?: string
+  images?: string[]
   createdAt: string
   sightingCount?: number
   lastSeenAt?: string
+  age?: number
+  gender?: string
+  breed?: string
+  color?: string
+  healthNotes?: string
+  description?: string
+  adoptedAt?: string
 }
 
 export function getCatList(params?: { status?: string; page?: number; pageSize?: number }) {

@@ -2,19 +2,25 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton, ElEmpty } from 'element-plus'
-import { getAdoptableCats } from '@/api/modules/cat'
-import { getCatStatusLabel } from '@/stores/dictionary'
+import { getAdoptableCats, getCatById } from '@/api/modules/cat'
 import type { CatItem } from '@/api/modules/cat'
 
 const router = useRouter()
 const list = ref<CatItem[]>([])
 const loading = ref(false)
+const catDetails = ref<Record<string, CatItem>>({})
 
 async function load() {
   loading.value = true
   try {
-    const res = await getAdoptableCats({ pageSize: 20 })
-    list.value = (res as { list: CatItem[] }).list ?? []
+    const res: any = await getAdoptableCats({ pageSize: 20 })
+    list.value = res?.data?.list ?? []
+    for (const cat of list.value) {
+      try {
+        const detailRes = await getCatById(cat.id)
+        catDetails.value[cat.id] = (detailRes as any)?.data
+      } catch {}
+    }
   } catch {
     list.value = []
   } finally {
@@ -23,7 +29,11 @@ async function load() {
 }
 
 function goApply(catId: string) {
-  router.push({ name: 'AdoptApply', params: { catId } })
+  router.push({ name: 'AdoptDetail', params: { catId } })
+}
+
+function getCatDetail(catId: string) {
+  return catDetails.value[catId]
 }
 
 onMounted(load)
@@ -31,30 +41,38 @@ onMounted(load)
 
 <template>
   <div class="page">
-    <h2>可领养列表</h2>
+    <h2>🐱 可领养猫咪</h2>
     <div v-if="loading" class="loading">加载中...</div>
     <div v-else-if="!list.length" class="empty">
       <ElEmpty description="暂无可领养猫咪" />
     </div>
-    <div v-else class="grid">
-      <div v-for="cat in list" :key="cat.id" class="card">
-        <div class="avatar">{{ cat.avatar ? '图' : '🐱' }}</div>
-        <div class="info">
-          <span class="name">{{ cat.name || '未命名' }}</span>
-          <span class="status">{{ getCatStatusLabel(cat.status as any) }}</span>
+    <div v-else class="adopt-grid">
+      <div v-for="cat in list" :key="cat.id" class="adopt-card">
+        <div class="card-img">
+          <img v-if="cat.avatar || (getCatDetail(cat.id)?.images?.[0])" :src="cat.avatar || getCatDetail(cat.id)?.images?.[0]" />
+          <div v-else class="img-placeholder">🐱</div>
         </div>
-        <el-button type="primary" size="small" @click="goApply(cat.id)">申请领养</el-button>
+        <div class="card-name">{{ cat.name || '未命名' }}</div>
+        <el-button type="primary" link @click="goApply(cat.id)">查看详情</el-button>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.page { background: #fff; padding: 24px; border-radius: 8px; }
-.loading, .empty { padding: 24px; text-align: center; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-.card { border: 1px solid #ebeef5; border-radius: 8px; padding: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.avatar { width: 64px; height: 64px; background: #f5f7fa; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
-.name { font-weight: 600; }
-.status { font-size: 12px; color: #909399; }
+.page { 
+  background: #f5f7fa; 
+  padding: 20px; 
+  min-height: 100vh; }
+
+h2 { margin: 0 0 20px 0; 
+  color: #303133; }
+.loading, .empty { padding: 40px; text-align: center; }
+.adopt-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+.adopt-card { background: #fff; border-radius: 16px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); transition: transform 0.2s; }
+.adopt-card:hover { transform: translateY(-4px); box-shadow: 0 4px 20px rgba(0,0,0,0.12); }
+.card-img { width: 100%; height: 180px; background: #f5f7fa; overflow: hidden; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; }
+.img-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 60px; }
+.card-name { text-align: center; font-size: 18px; font-weight: 600; color: #303133; padding: 12px 0 8px; }
 </style>

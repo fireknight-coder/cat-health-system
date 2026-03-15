@@ -36,7 +36,7 @@ async function submit() {
         <el-input v-model="form.phone" placeholder="用于线下联系" />
       </el-form-item>
       <el-form-item label="备注">
-        <el-input v-model="form.remark" type="textarea" rows="2" />
+        <el-input v-model="form.remark" type="textarea" :rows="2" placeholder="请输入备注" />
       </el-form-item>
       <el-form-item>
         <el-button type="primary" :loading="loading" @click="submit">提交申请</el-button>

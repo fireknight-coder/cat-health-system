@@ -25,7 +25,12 @@ const interventionSchema = new mongoose.Schema({
   endTime: Date,
   outcome: String,
   cost: Number,
-  images: [String]
+  images: [String],
+  replies: [{
+    content: String,
+    createdAt: { type: Date, default: Date.now },
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  }]
 }, {
   timestamps: true
 })

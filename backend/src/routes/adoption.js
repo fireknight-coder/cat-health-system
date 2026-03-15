@@ -4,30 +4,28 @@ import express from 'express'
 import { Adoption } from '../models/Adoption.js'
 import { Cat } from '../models/Cat.js'
 
+import { authenticateToken } from '../middleware/auth.js'
+
 const router = express.Router()
 
-// 创建领养申请 - 对应前端的 createAdoptionRequest 函数
-router.post('/requests', async (req, res) => {
+// 创建领养申请
+router.post('/requests', authenticateToken, async (req, res) => {
   try {
     const { catId, phone, remark } = req.body
     
-    // 检查猫咪是否存在且可领养
-    const cat = await Cat.findById(catId)
-    if (!cat || cat.status !== 'adoptable') {
-      return res.status(400).json({ success: false, message: '该猫咪不可领养' })
-    }
-    
     const adoption = new Adoption({
       catId,
-      userId: req.user?.id || 'anonymous',
+      userId: req.user._id,
       phone,
-      remark
+      remark,
+      status: 'PENDING'
     })
     
     await adoption.save()
     
     res.json({ success: true, data: { id: adoption._id } })
   } catch (error) {
+    console.error('创建领养申请错误:', error)
     res.status(500).json({ success: false, message: '创建领养申请失败' })
   }
 })
@@ -59,3 +57,68 @@ router.get('/requests', async (req, res) => {
 })
 
 export default router
+
+// 获取当前用户被批准的领养（宠物列表）
+router.get('/my-pets', authenticateToken, async (req, res) => {
+  try {
+    const adoptions = await Adoption.find({ 
+      userId: req.user._id, 
+      status: 'APPROVED' 
+    }).populate('catId', 'name avatar images age gender color breed')
+    
+    res.json({ success: true, data: adoptions })
+  } catch (error) {
+    res.status(500).json({ success: false, message: '获取失败' })
+  }
+})
+
+// 获取当前用户被批准的领养（宠物列表）
+router.get('/my-pets', authenticateToken, async (req, res) => {
+  try {
+    const adoptions = await Adoption.find({ 
+      userId: req.user._id, 
+      status: 'APPROVED' 
+    }).populate('catId', 'name avatar images age gender color breed')
+    
+    res.json({ success: true, data: adoptions })
+  } catch (error) {
+    res.status(500).json({ success: false, message: '获取失败' })
+  }
+})
+
+// 批准领养申请
+router.post('/:id/approve', authenticateToken, async (req, res) => {
+  try {
+    const adoption = await Adoption.findById(req.params.id)
+    if (!adoption) {
+      return res.status(404).json({ success: false, message: '申请不存在' })
+    }
+    
+    adoption.status = 'APPROVED'
+    await adoption.save()
+    
+    // 更新猫咪状态为已领养
+    await Cat.findByIdAndUpdate(adoption.catId, { status: 'ADOPTED' })
+    
+    res.json({ success: true })
+  } catch (error) {
+    res.status(500).json({ success: false, message: '操作失败' })
+  }
+})
+
+// 拒绝领养申请
+router.post('/:id/reject', authenticateToken, async (req, res) => {
+  try {
+    const adoption = await Adoption.findById(req.params.id)
+    if (!adoption) {
+      return res.status(404).json({ success: false, message: '申请不存在' })
+    }
+    
+    adoption.status = 'REJECTED'
+    await adoption.save()
+    
+    res.json({ success: true })
+  } catch (error) {
+    res.status(500).json({ success: false, message: '操作失败' })
+  }
+})

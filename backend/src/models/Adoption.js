@@ -9,8 +9,8 @@ const adoptionSchema = new mongoose.Schema({
   remark: String,
   status: { 
     type: String, 
-    enum: ['pending', 'approved', 'rejected', 'completed'], 
-    default: 'pending' 
+    enum: ['PENDING', 'APPROVED', 'REJECTED', 'COMPLETED'], 
+    default: 'PENDING' 
   },
   contactLogs: [{
     time: Date,

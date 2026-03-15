@@ -53,3 +53,7 @@ export function rejectAdoption(requestId: string, reason?: string) {
 export function addFollowUp(requestId: string, data: { time: string; env?: string; relation?: string; needIntervention?: boolean; note?: string }) {
   return request.post(`/adoption-requests/${requestId}/follow-up`, data)
 }
+
+export function getMyPets() {
+  return request.get<any[]>('/adoption/my-pets')
+}
