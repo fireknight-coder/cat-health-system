@@ -92,7 +92,7 @@ async function loadObservations() {
   obsLoading.value = true
   try {
     const res = await getObservations(currentCat.value.id, { pageSize: 50 })
-    observations.value = (res as { data: { list: ObservationItem[] } }).data?.list ?? []
+    observations.value = (res as any).data ?? []
   } catch {
     observations.value = []
   } finally {
@@ -163,7 +163,16 @@ const photoFileList = ref<any[]>([])
 
 function handlePhotoChange(_file: any, files: any[]) {
   photoFileList.value = files
-  newPhotos.value = files.map(f => URL.createObjectURL(f.raw))
+  newPhotos.value = []
+  files.forEach(f => {
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      if (e.target?.result) {
+        newPhotos.value.push(e.target.result as string)
+      }
+    }
+    reader.readAsDataURL(f.raw)
+  })
 }
 
 async function savePhotos() {
@@ -319,11 +328,14 @@ onMounted(load)
           <div v-if="obsLoading" class="loading">加载中...</div>
           <el-empty v-else-if="observations.length === 0" description="暂无记录" :image-size="40" />
           <div v-else class="obs-list">
-            <div v-for="obs in observations" :key="obs.id" class="obs-item" :class="{ important: obs.isImportant }">
+            <div v-for="obs in observations" :key="obs._id" class="obs-item" :class="{ important: obs.isImportant }">
               <div class="obs-header">
+                <el-tag :type="(obs as any).isUserRecord ? 'warning' : 'success'" size="small">
+                  {{ (obs as any).isUserRecord ? '用户提交' : '管理员记录' }}
+                </el-tag>
                 <el-tag :type="getTypeColor(obs.type)" size="small">{{ typeOptions.find(t => t.value === obs.type)?.label || obs.type }}</el-tag>
                 <span class="obs-time">{{ obs.observedAt }}</span>
-                <el-button type="danger" link size="small" @click="removeObservation(obs.id)">删除</el-button>
+                <el-button type="danger" link size="small" @click="removeObservation(obs._id)">删除</el-button>
               </div>
               <div class="obs-content">{{ obs.content }}</div>
             </div>

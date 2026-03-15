@@ -4,7 +4,7 @@ import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// 获取猫咪列表
+
 router.get('/', authenticateToken, async (req, res) => {
   try {
     const { page = 1, pageSize = 50, status } = req.query

@@ -29,10 +29,14 @@ async function submit() {
   }
   submitting.value = true
   try {
-    await createObservation({ catId, ...form.value })
+    const data = { catId, ...form.value, isUserRecord: true }
+    console.log('提交观察记录:', data)
+    const res = await createObservation(data)
+    console.log('提交结果:', res)
     ElMessage.success('提交成功')
     router.push('/pets')
-  } catch {
+  } catch (e) {
+    console.error('提交失败:', e)
     ElMessage.error('提交失败')
   } finally {
     submitting.value = false

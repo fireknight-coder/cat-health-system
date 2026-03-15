@@ -16,6 +16,7 @@ const observationSchema = new mongoose.Schema({
   },
   images: [String],
   isImportant: { type: Boolean, default: false },
+  isUserRecord: { type: Boolean, default: false },
   tags: [String],
   recordedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
 }, {
