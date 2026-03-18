@@ -14,9 +14,11 @@ router.get('/', authenticateToken, async (req, res) => {
     console.log('获取猫咪列表, 用户:', req.user?.username, '角色:', req.user?.role)
     
     const cats = await Cat.find(filter)
+      .populate({ path: 'adoptionInfo.adoptedBy', select: 'username' })
       .limit(parseInt(pageSize))
       .skip((parseInt(page) - 1) * parseInt(pageSize))
       .sort({ createdAt: -1 })
+      
     
     const total = await Cat.countDocuments(filter)
     console.log(`找到 ${cats.length} 只猫咪, 总共 ${total} 只`)
@@ -24,7 +26,8 @@ router.get('/', authenticateToken, async (req, res) => {
     // 添加id字段别名
     const catList = cats.map(cat => ({
       ...cat.toObject(),
-      id: cat._id
+      id: cat._id,
+      adopterName: cat.adoptionInfo?.adoptedBy?.username || null
     }))
     
     res.json({
@@ -49,6 +52,7 @@ router.get('/adoptable', async (req, res) => {
     console.log('获取可领养猫咪列表')
     
     const cats = await Cat.find(filter)
+      .populate('adoptionInfo.adoptedBy', 'username')
       .limit(parseInt(pageSize))
       .skip((parseInt(page) - 1) * parseInt(pageSize))
       .sort({ updatedAt: -1 })
@@ -58,7 +62,8 @@ router.get('/adoptable', async (req, res) => {
     
     const catList = cats.map(cat => ({
       ...cat.toObject(),
-      id: cat._id
+      id: cat._id,
+      adopterName: cat.adoptionInfo?.adoptedBy?.username || null
     }))
     
     res.json({

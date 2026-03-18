@@ -64,6 +64,10 @@ async function load() {
   } finally {
     loading.value = false
   }
+      const res = await getCatList({ pageSize: 100 })
+    console.log('返回数据:', res)
+    const resData = res as any
+    list.value = resData?.data?.list ?? resData?.list ?? []
 }
 
 async function openDetail(cat: CatItem) {
@@ -209,6 +213,11 @@ onMounted(load)
       <el-table-column prop="name" label="名字" min-width="100">
         <template #default="{ row }">
           <span class="cat-name">{{ row.name || '-' }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column prop="adopterName" label="领养人" min-width="100">
+        <template #default="{ row }">
+          {{ row.adopterName || '-' }}
         </template>
       </el-table-column>
       <el-table-column prop="status" label="状态" min-width="80">

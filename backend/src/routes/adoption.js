@@ -38,6 +38,7 @@ router.get('/requests', async (req, res) => {
     
     const requests = await Adoption.find(filter)
       .populate('catId', 'name avatar status')
+      .populate('userId', 'username')
       .limit(parseInt(pageSize))
       .skip((parseInt(page) - 1) * parseInt(pageSize))
       .sort({ createdAt: -1 })
@@ -72,19 +73,7 @@ router.get('/my-pets', authenticateToken, async (req, res) => {
   }
 })
 
-// 获取当前用户被批准的领养（宠物列表）
-router.get('/my-pets', authenticateToken, async (req, res) => {
-  try {
-    const adoptions = await Adoption.find({ 
-      userId: req.user._id, 
-      status: 'APPROVED' 
-    }).populate('catId', 'name avatar images age gender color breed')
-    
-    res.json({ success: true, data: adoptions })
-  } catch (error) {
-    res.status(500).json({ success: false, message: '获取失败' })
-  }
-})
+
 
 // 批准领养申请
 router.post('/:id/approve', authenticateToken, async (req, res) => {
@@ -97,8 +86,13 @@ router.post('/:id/approve', authenticateToken, async (req, res) => {
     adoption.status = 'APPROVED'
     await adoption.save()
     
-    // 更新猫咪状态为已领养
-    await Cat.findByIdAndUpdate(adoption.catId, { status: 'ADOPTED' })
+    // 更新猫咪状态为已领养，同时设置领养人
+    await Cat.findByIdAndUpdate(adoption.catId, { 
+      status: 'ADOPTED',
+      'adoptionInfo.available': false,
+      'adoptionInfo.adoptedBy': adoption.userId,
+      'adoptionInfo.adoptedAt': new Date()
+    })
     
     res.json({ success: true })
   } catch (error) {

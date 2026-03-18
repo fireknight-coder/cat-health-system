@@ -62,7 +62,7 @@ async function handleReject(id: string) {
       </el-table-column>
       <el-table-column prop="userId" label="申请人" min-width="100">
         <template #default="{ row }">
-          {{ row.userId || '-' }}
+          {{ row.userId?.username || row.userId || '-' }}
         </template>
       </el-table-column>
       <el-table-column prop="phone" label="联系电话" min-width="120" />
@@ -87,3 +87,5 @@ async function handleReject(id: string) {
     </el-table>
   </div>
 </template>
+    const res = await getAdoptionRequestList({ pageSize: 50 })
+    console.log('领养申请返回:', res)
