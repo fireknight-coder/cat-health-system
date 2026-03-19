@@ -45,6 +45,7 @@ router.post('/register', async (req, res) => {
     // 创建新用户
     const user = new User({
       username,
+      userID,
       email,
       password
     });
@@ -367,9 +368,11 @@ router.post('/apply-admin', async (req, res) => {
 router.post('/review-admin', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { applicantId, action, comment } = req.body; // action: 'approve' 或 'reject'
-    const reviewerId = req.user?.id; // 从认证中间件获取审核人ID
+    const reviewerId = req.user?.id;
+    const reviewer = await User.findById(reviewerId);
+    const reviewerName = reviewer?.username || reviewerId;
 
-    console.log('管理员审核请求:', { applicantId, action, comment, reviewerId });
+    console.log('管理员审核请求:', { applicantId, action, comment, reviewerName });
 
     if (!applicantId || !action) {
       return res.status(400).json({

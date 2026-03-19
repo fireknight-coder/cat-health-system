@@ -34,7 +34,11 @@ onMounted(load)
     <h2>干预工单</h2>
     <el-table v-loading="loading" :data="list" stripe>
       <el-table-column prop="id" label="工单ID" width="120" />
-      <el-table-column prop="catId" label="猫ID" width="120" />
+      <el-table-column label="猫咪" width="150">
+        <template #default="{ row }">
+          {{ row.catId?.name || row.catId || '未命名' }}
+        </template>
+      </el-table-column>
       <el-table-column prop="status" label="状态" width="100">
         <template #default="{ row }">
           <el-tag>{{ getInterventionStatusLabel(row.status as any) }}</el-tag>

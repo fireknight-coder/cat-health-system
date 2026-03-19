@@ -28,7 +28,7 @@ const menus = computed(() => {
 
 // 显示用户信息
 const userDisplayName = computed(() => {
-  return auth.isSuperAdmin ? `🛡️ ${auth.userId}` : auth.userId
+  return auth.isSuperAdmin ? `🛡️ ${auth.username || auth.userId}` : (auth.username || auth.userId)
 })
 
 // 显示标题

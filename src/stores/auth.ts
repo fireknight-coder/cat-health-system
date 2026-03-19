@@ -8,6 +8,7 @@ export const useAuthStore = defineStore('auth', () => {
   const token = ref<string | null>(localStorage.getItem('token'))
   const role = ref<Role>((localStorage.getItem('role') as Role) || 'user')
   const userId = ref<string | null>(localStorage.getItem('userId'))
+  const username = ref<string | null>(localStorage.getItem('username'))
 
   const isLoggedIn = computed(() => !!token.value)
   const isAdmin = computed(() => role.value === 'admin' || role.value === 'superadmin')
@@ -18,20 +19,23 @@ export const useAuthStore = defineStore('auth', () => {
     token.value = t
     role.value = r
     userId.value = id
-    
+    //username.value = u || null
     localStorage.setItem('token', t)
     localStorage.setItem('role', r)
     localStorage.setItem('userId', id)
+    //if (u) localStorage.setItem('username', u)
   }
 
   function logout() {
     token.value = null
     role.value = 'user'
     userId.value = null
+    username.value = null
     
     localStorage.removeItem('token')
     localStorage.removeItem('role')
     localStorage.removeItem('userId')
+    localStorage.removeItem('username')
   }
 
   const canAccessAdmin = computed(() => isAdmin.value)
@@ -52,6 +56,7 @@ export const useAuthStore = defineStore('auth', () => {
     token, 
     role, 
     userId, 
+    username,
     isLoggedIn, 
     isAdmin, 
     isUser, 

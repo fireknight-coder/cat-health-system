@@ -20,8 +20,8 @@ URL: http://localhost:3001/api/cats
 
 
 //开启mongodb，管理员权限
-net start MongoDB
 
+net start MongoDB
 //连接数据库
 "E:\mongodb-windows-x86_64-8.2.5\bin\mongosh-2.7.0-win32-x64\bin\mongosh.exe" cat-health-system
 

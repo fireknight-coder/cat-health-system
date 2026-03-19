@@ -2,6 +2,7 @@
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElMenu, ElMenuItem, ElButton } from 'element-plus'
+import { computed } from 'vue'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -11,6 +12,12 @@ const menus = [
   { path: '/adopt', name: '可领养' },
   { path: '/pets', name: '我的宠物' },
 ]
+
+// 显示用户信息
+const userDisplayName = computed(() => {
+  return auth.isSuperAdmin ? `🛡️ ${auth.username || auth.userId}` : (auth.username || auth.userId)
+})
+
 
 function logout() {
   auth.logout()
@@ -25,7 +32,12 @@ function logout() {
       <nav class="nav">
         <router-link v-for="m in menus" :key="m.path" :to="m.path" class="nav-link">{{ m.name }}</router-link>
       </nav>
-      <el-button size="small" @click="logout">退出</el-button>
+
+            <div class="user-info">
+        <span class="username">{{ userDisplayName }}</span>
+        <el-button size="small" @click="logout">退出</el-button>
+      </div>
+
     </header>
     <main class="main">
       <router-view v-slot="{ Component }">

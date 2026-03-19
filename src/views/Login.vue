@@ -178,7 +178,7 @@ async function handleLogin() {
       console.log('Token:', token)
       
       // 使用真实的用户角色（后端返回的role字段）
-      auth.login(token, user.role, user.id)
+      auth.login(token, user.role,  user.username)
       ElMessage.success('登录成功')
       dialogVisible.value = false
       
@@ -249,21 +249,16 @@ function resetForm() {
       <div class="login-box">
         <!-- 左侧图片区域 -->
         <div class="left-section">
-          <!-- 方式1: 使用网络图片 -->
-          <!-- <img 
-            src="https://images.unsplash.com/photo-1543852786-1cf6624b9987?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&q=80" 
-            alt="可爱猫咪" 
-            class="login-image"
-          /> -->
-          
-          <!-- 方式2: 使用本地图片 (需要将图片放在assets目录) -->
+
           <img src="/picuter/R.jpg" alt="可爱猫咪" class="login-image" />
         </div>
         
         <!-- 右侧表单区域 -->
         <div class="right-section">
           <div class="form-content">
-            <h2>社区猫管理系统</h2>
+            <p id="offscreen-text" class="offscreen-text"></p>
+
+            <h2>Cat Health System</h2>
             <el-form label-width="80px">
               <el-form-item label="身份">
                 <el-radio-group v-model="role">
@@ -271,7 +266,7 @@ function resetForm() {
                   <el-radio value="admin">管理员</el-radio>
                 </el-radio-group>
               </el-form-item>
-              <el-form-item>
+              <el-form-item class="ma">
                 <el-button type="primary" @click="openDialog" style="width: 100%">
                   进入系统
                 </el-button>
@@ -409,6 +404,41 @@ function resetForm() {
   object-position: center;
 }
 
+
+:deep(.el-input__wrapper) {
+  box-shadow: 0 0 0 1px #008238a3 inset;
+}
+:deep(.el-input__wrapper:hover) {
+  box-shadow: 0 0 0 1px #008238a3 inset;
+}
+:deep(.el-input__wrapper.is-focus) {
+  box-shadow: 0 0 0 1px #008238a3 inset;
+}
+:deep(.el-form-item__label) {
+  color: #6d6d6d;
+  margin-right: 40px;
+}
+:deep(.el-button--primary) {
+  background-color: #008238a3;
+  border-color: #008238a3;
+  
+ 
+}
+.ma{  margin-right: 60px;}
+:deep(.el-button--primary:hover) {
+  background-color: #008238a3;
+  border-color: #008238a3;
+}
+:deep(.el-radio__label) {
+  color: #00be72;
+}
+:deep(.el-tabs__item.is-active) {
+  color: #00be72;
+}
+:deep(.el-tabs__active-bar) {
+  background-color: #008238a3;
+}
+
 .right-section {
   flex: 1;
   display: flex;
@@ -419,14 +449,14 @@ function resetForm() {
 
 .form-content {
   width: 100%;
-  max-width: 300px;
+  max-width: 400px;
 }
 
 h2 {
   margin: 0 0 30px 0;
   text-align: center;
-  color: #333;
-  font-size: 24px;
+  color: #006c41;
+  font-size: 35px;
   font-weight: 600;
 }
 
@@ -440,7 +470,7 @@ h2 {
   
   .left-section {
     border-right: none;
-    border-bottom: 1px solid #e9ecef;
+    border-bottom: 1px solid #71abe4;
     min-height: 200px;
   }
   
@@ -448,4 +478,7 @@ h2 {
     padding: 30px 20px;
   }
 }
+
+
+
 </style>
