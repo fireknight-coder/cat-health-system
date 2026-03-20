@@ -178,7 +178,7 @@ async function handleLogin() {
       console.log('Token:', token)
       
       // 使用真实的用户角色（后端返回的role字段）
-      auth.login(token, user.role,  user.username)
+      auth.login(token, user.role, user.id, user.username)
       ElMessage.success('登录成功')
       dialogVisible.value = false
       

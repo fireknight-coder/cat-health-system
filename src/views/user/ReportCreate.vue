@@ -57,7 +57,8 @@ async function submitAdminApplication() {
       throw new Error(result.error || '申请失败')
     }
   } catch (error: any) {
-    ElMessage.error(error.message || '申请失败，请稍后重试')
+    console.error('申请管理员错误:', error)
+    ElMessage.error(error.message || result?.error || '申请失败，请稍后重试')
   } finally {
     submittingApplication.value = false
   }

@@ -43,7 +43,7 @@ async function submitApply() {
     router.push('/adopt')
   } catch (err: any) {
     console.error('提交失败:', err)
-    ElMessage.error(err.message || '提交失败')
+    ElMessage.error(err.response?.data?.message || err.message || '提交失败')
   } finally {
     submitting.value = false
   }
@@ -72,6 +72,9 @@ onMounted(loadCat)
           <h2>{{ cat.name || '未命名' }}</h2>
           <el-tag :type="(cat.status as CatStatus) === 'ADOPTABLE' ? 'success' : 'info'">
             {{ getCatStatusLabel(cat.status as CatStatus) }}
+          </el-tag>
+          <el-tag v-if="cat.pendingAdoptionCount" type="warning" style="margin-left: 8px">
+            待审批申请：{{ cat.pendingAdoptionCount }}人
           </el-tag>
           <div class="info-row" v-if="cat.age">年龄：{{ cat.age }}岁</div>
           <div class="info-row" v-if="cat.gender">性别：{{ cat.gender === 'male' ? '公' : '母' }}</div>

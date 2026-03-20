@@ -15,15 +15,15 @@ export const useAuthStore = defineStore('auth', () => {
   const isUser = computed(() => role.value === 'user' || role.value === 'pending_admin')
   const isSuperAdmin = computed(() => role.value === 'superadmin')
 
-  function login(t: string, r: Role, id: string) {
+  function login(t: string, r: Role, id: string, u?: string) {
     token.value = t
     role.value = r
     userId.value = id
-    //username.value = u || null
+    username.value = u || null
     localStorage.setItem('token', t)
     localStorage.setItem('role', r)
     localStorage.setItem('userId', id)
-    //if (u) localStorage.setItem('username', u)
+    if (u) localStorage.setItem('username', u)
   }
 
   function logout() {

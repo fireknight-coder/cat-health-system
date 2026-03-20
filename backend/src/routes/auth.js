@@ -45,7 +45,6 @@ router.post('/register', async (req, res) => {
     // 创建新用户
     const user = new User({
       username,
-      userID,
       email,
       password
     });
@@ -314,7 +313,9 @@ router.post('/apply-admin', async (req, res) => {
     }
 
     // 查找用户
+    console.log('查找用户:', userId);
     const user = await User.findById(userId);
+    console.log('找到用户:', user);
     if (!user) {
       return res.status(404).json({
         success: false,

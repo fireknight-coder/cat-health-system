@@ -1,5 +1,6 @@
 import express from 'express';
 import { Cat } from '../models/Cat.js';
+import { Adoption } from '../models/Adoption.js';
 import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
@@ -86,11 +87,19 @@ router.get('/:id', authenticateToken, async (req, res) => {
     if (!cat) {
       return res.status(404).json({ success: false, message: '猫咪不存在' })
     }
+    
+    // 获取待审批的申请数量
+    const pendingCount = await Adoption.countDocuments({
+      catId: req.params.id,
+      status: 'PENDING'
+    })
+    
     res.json({
       success: true,
       data: {
         ...cat.toObject(),
-        id: cat._id
+        id: cat._id,
+        pendingAdoptionCount: pendingCount
       }
     })
   } catch (error) {
@@ -101,9 +110,17 @@ router.get('/:id', authenticateToken, async (req, res) => {
 // 更新猫咪
 router.patch('/:id', authenticateToken, async (req, res) => {
   try {
+    const catId = req.params.id;
+    const updateData = { ...req.body };
+    
+    const oldCat = await Cat.findById(catId);
+    if (oldCat && oldCat.status === 'ADOPTED' && updateData.status && updateData.status !== 'ADOPTED') {
+      updateData.adoptionInfo = { available: true };
+    }
+    
     const cat = await Cat.findByIdAndUpdate(
-      req.params.id,
-      req.body,
+      catId,
+      updateData,
       { new: true }
     )
     if (!cat) {

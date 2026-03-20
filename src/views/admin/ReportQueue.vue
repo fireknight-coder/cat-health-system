@@ -38,7 +38,12 @@ onMounted(load)
   <div class="page">
     <h2>上报审核队列</h2>
     <el-table v-loading="loading" :data="list" stripe>
-      <el-table-column prop="id" label="ID" width="120" />
+      <el-table-column label="用户名称" width="120">
+        <template #default="{ row }">
+          {{ row.reporterId?.username || row.reporterId || '-' }}
+        </template>
+      </el-table-column>
+      
       <el-table-column prop="reportedAt" label="上报时间" width="160" />
       <el-table-column prop="address" label="位置" />
       <el-table-column prop="status" label="状态" width="120">

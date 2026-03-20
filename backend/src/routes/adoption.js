@@ -13,6 +13,21 @@ router.post('/requests', authenticateToken, async (req, res) => {
   try {
     const { catId, phone, remark } = req.body
     
+    // 检查3天内是否已对该猫申请过
+    const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000);
+    const recentAdoption = await Adoption.findOne({
+      catId,
+      userId: req.user._id,
+      createdAt: { $gte: threeDaysAgo }
+    });
+    
+    if (recentAdoption) {
+      return res.status(400).json({
+        success: false,
+        message: '您已在3天内对该猫提交过领养申请，请3天后再申请'
+      });
+    }
+    
     const adoption = new Adoption({
       catId,
       userId: req.user._id,
@@ -65,9 +80,19 @@ router.get('/my-pets', authenticateToken, async (req, res) => {
     const adoptions = await Adoption.find({ 
       userId: req.user._id, 
       status: 'APPROVED' 
-    }).populate('catId', 'name avatar images age gender color breed')
+    }).populate({ 
+      path: 'catId', 
+      select: 'name avatar images age gender color breed adoptionInfo'
+    })
     
-    res.json({ success: true, data: adoptions })
+    const myPets = adoptions.filter(a => 
+      a.catId && 
+      a.catId.adoptionInfo &&
+      a.catId.adoptionInfo.adoptedBy &&
+      a.catId.adoptionInfo.adoptedBy.toString() === req.user._id.toString()
+    );
+    
+    res.json({ success: true, data: myPets })
   } catch (error) {
     res.status(500).json({ success: false, message: '获取失败' })
   }
