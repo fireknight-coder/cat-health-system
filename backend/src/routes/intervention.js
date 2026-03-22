@@ -2,6 +2,7 @@
 // 对应前端: src/api/modules/intervention.ts
 import express from 'express'
 import { Intervention } from '../models/Intervention.js'
+import { User } from '../models/User.js'
 
 const router = express.Router()
 
@@ -9,6 +10,9 @@ const router = express.Router()
 router.post('/', async (req, res) => {
   try {
     const intervention = new Intervention(req.body)
+    if (!intervention.createdBy && req.user?._id) {
+      intervention.createdBy = req.user._id
+    }
     await intervention.save()
     
     res.json({ success: true, data: { id: intervention._id } })
@@ -50,6 +54,7 @@ router.get('/', async (req, res) => {
 // 获取干预详情
 router.get('/:id', async (req, res) => {
   try {
+
     const intervention = await Intervention.findById(req.params.id)
       .populate('catId', 'name avatar status')
       .populate('assignedTo', 'username phone')
@@ -58,8 +63,22 @@ router.get('/:id', async (req, res) => {
       return res.status(404).json({ success: false, message: '干预记录不存在' })
     }
     
-    res.json({ success: true, data: intervention })
+    // 手动处理 createdBy（因为它存的是字符串ID）
+    let createdByInfo = null
+    if (intervention.createdBy) {
+      const user = await User.findById(intervention.createdBy).select('username phone')
+      if (user) {
+        createdByInfo = { _id: user._id.toString(), username: user.username, phone: user.phone }
+      }
+    }
+    
+    const result = intervention.toObject()
+    result.createdBy = createdByInfo
+    
+    console.log('返回干预详情 - createdBy:', JSON.stringify(createdByInfo))
+    res.json({ success: true, data: result })
   } catch (error) {
+    console.error('获取干预详情失败:', error)
     res.status(500).json({ success: false, message: '获取干预详情失败' })
   }
 })

@@ -6,7 +6,7 @@ const interventionSchema = new mongoose.Schema({
   catId: { type: mongoose.Schema.Types.ObjectId, ref: 'Cat', required: true },
   type: { 
     type: String, 
-    enum: ['medical', 'rescue', 'feeding', 'sterilization'], 
+    enum: ['medical', 'rescue', 'feeding', 'sterilization', 'noadopted'], 
     required: true 
   },
   description: String,

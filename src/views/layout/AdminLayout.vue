@@ -45,6 +45,7 @@ function logout() {
 <template>
   <div class="admin-layout">
     <header class="header">
+      <img src="E:\EdithKirkland\Desktop\cat-health-system\src\assets\icon.jpg" alt="icon" style="width: 50px; height: 50px;" />
       <span class="title">{{ pageTitle }}</span>
       <nav class="nav">
         <router-link v-for="m in menus" :key="m.path" :to="m.path" class="nav-link">{{ m.name }}</router-link>
@@ -63,15 +64,51 @@ function logout() {
 </template>
 
 <style scoped>
-.admin-layout { min-height: 100vh; display: flex; flex-direction: column; background: #f0f2f5; }
-.header {
-  display: flex; align-items: center; gap: 16px; padding: 12px 24px; background: #001529; color: #fff;
+.admin-layout { 
+  min-height: 100vh; 
+  display: flex; 
+  flex-direction: column; 
+  background: #00641196; 
 }
-.title { font-weight: 600; margin-right: 24px; color: #fff; }
-.nav { display: flex; gap: 16px; flex: 1; }
-.nav-link { color: rgba(255,255,255,.7); text-decoration: none; }
-.nav-link.router-link-active { color: #fff; font-weight: 600; }
-.user-info { display: flex; align-items: center; gap: 12px; }
-.username { color: rgba(255,255,255,.9); font-weight: 500; }
-.main { flex: 1; padding: 24px; }
+.header {
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  padding: 12px 24px; 
+  background: #000000; 
+  color: #ffd9d9;
+}
+.title { 
+  font-weight: 600; 
+  font-size: 35px;
+  margin-right: 24px; 
+  color: #83f50acb; 
+}
+.nav { 
+  display: flex; 
+  gap: 16px; 
+  flex: 1; 
+}
+.nav-link { 
+  color: #46a20d; 
+  text-decoration: none; 
+}
+.nav-link.router-link-active { 
+  color: #ff9a9a; 
+  font-weight: 600; 
+}
+.user-info { 
+  display: flex; 
+  align-items: center; 
+  gap: 12px; 
+}
+.username { 
+  color: #ff9a9a; 
+  font-weight: 500;
+  font-size: 25px; 
+}
+.main { 
+  flex: 1; 
+  padding: 24px; 
+}
 </style>

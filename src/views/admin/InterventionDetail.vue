@@ -42,10 +42,16 @@ onMounted(load)
 
 <template>
   <div class="page">
-    <h2>干预工单 · {{ id }}</h2>
+<h2 v-if="intervention">干预工单 · 申请人: {{ (intervention as any).createdBy?.username || '-' }} ({{ (intervention as any).createdBy?._id || id }})</h2>
+<h2 v-else>加载中...</h2>
     <div v-if="loading" class="loading">加载中...</div>
     <template v-else-if="intervention">
-      <p>猫ID：{{ intervention.catId }}</p>
+    <div v-if="(intervention as any).catId" class="cat-info">
+      <p>电话：{{ (intervention as any).createdBy?.phone || '-' }}</p>
+      <p>猫咪ID：{{ (intervention as any).catId._id }}</p>
+      <p>猫咪名字：{{ (intervention as any).catId.name }}</p>
+      <img v-if="(intervention as any).catId.avatar" :src="(intervention as any).catId.avatar" style="width:100px;height:100px;object-fit:cover;border-radius:8px" />
+    </div>
       <p>状态：{{ getInterventionStatusLabel(intervention.status as any) }}</p>
       <p>创建时间：{{ intervention.createdAt }}</p>
       <p v-if="(intervention as any).description">描述：{{ (intervention as any).description }}</p>
@@ -61,7 +67,7 @@ onMounted(load)
         </div>
       </div>
       <div v-if="intervention.status !== 'completed'" class="section">
-        <el-input v-model="resultRemark" type="textarea" rows="2" placeholder="处理结果备注" />
+        <el-input v-model="resultRemark" type="textarea" :rows="2" placeholder="处理结果备注" />
         <el-button type="primary" @click="setDone">结案</el-button>
       </div>
     </template>
