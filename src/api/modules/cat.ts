@@ -21,6 +21,7 @@ export interface CatItem {
   healthNotes?: string
   description?: string
   adoptedAt?: string
+  pendingAdoptionCount?: number
 }
 
 export function getCatList(params?: { status?: string; page?: number; pageSize?: number }) {

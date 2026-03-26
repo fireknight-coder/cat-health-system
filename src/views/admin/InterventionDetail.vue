@@ -77,11 +77,28 @@ onMounted(load)
 </template>
 
 <style scoped>
-.page { background: #fff; padding: 24px; border-radius: 8px; }
-.section { margin: 16px 0; }
-.result-section, .replies-section { margin: 16px 0; padding: 12px; background: #f5f7fa; border-radius: 8px; }
-.result-section h4, .replies-section h4 { margin: 0 0 8px 0; }
-.reply-item { padding: 8px 0; border-bottom: 1px solid #eee; }
-.reply-item:last-child { border-bottom: none; }
-.reply-time { font-size: 12px; color: #999; }
+.page { background: #fff; 
+  padding: 24px; 
+  border-radius: 8px; }
+.section { 
+  margin: 16px 0; 
+}
+.result-section, .replies-section { 
+  margin: 16px 0; 
+  padding: 12px; 
+  background: #f5f7fa; 
+  border-radius: 8px; }
+.result-section h4, .replies-section h4 { 
+  margin: 0 0 8px 0; 
+}
+.reply-item { 
+  padding: 8px 0; 
+  border-bottom: 1px solid #eee; 
+}
+.reply-item:last-child { 
+  border-bottom: none; 
+}
+.reply-time { 
+  font-size: 12px; 
+  color: #999; }
 </style>

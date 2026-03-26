@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import { ElMenu, ElMenuItem, ElButton } from 'element-plus'
+import { ElButton } from 'element-plus'
 import { computed } from 'vue'
 
 const router = useRouter()
@@ -63,7 +63,7 @@ function logout() {
   gap: 16px; 
   padding: 12px 24px; 
   background: #000000;
-  color: #ff9a9a; 
+  color: #e58d00; 
   box-shadow: 0 1px 4px rgba(0,0,0,.08);
 }
 .title { 
@@ -81,7 +81,7 @@ function logout() {
   text-decoration: none; 
 }
 .nav-link.router-link-active { 
-  color: #ff9a9a;
+  color: #e58d00;
   font-weight: 600;
    
   }
@@ -90,7 +90,7 @@ function logout() {
   padding: 24px; 
   }
 .username { 
-  color: #ff9a9a; 
+  color: #e58d00; 
   font-weight: 500;
   font-size: 25px; 
   margin-right: 10px;

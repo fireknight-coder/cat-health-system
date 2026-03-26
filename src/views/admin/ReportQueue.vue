@@ -48,12 +48,12 @@ onMounted(load)
       <el-table-column prop="address" label="位置" />
       <el-table-column prop="status" label="状态" width="120">
         <template #default="{ row }">
-          <el-tag>{{ getReportStatusLabel(row.status as any) }}</el-tag>
+          <el-tag class="state">{{ getReportStatusLabel(row.status as any) }}</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" width="100">
         <template #default="{ row }">
-          <el-button type="primary" link @click="goReview(row.id)">审核</el-button>
+          <el-button type="primary" link @click="goReview(row.id)" class="review-btn">审核</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -62,5 +62,38 @@ onMounted(load)
 </template>
 
 <style scoped>
-.page { background: #fff; padding: 24px; border-radius: 8px; }
+.page { 
+  background: #fff; 
+  padding: 24px; 
+  border-radius: 8px; }
+.state{
+  color: #fff;
+  background-color: #e6a23c;
+  border-color: #a77d3d;
+}
+.review-btn{
+  background-color: #e6a23c !important;
+  border-color: #a77d3d !important;
+  color: #fff !important;
+  font-size: 15px;
+}
+
+/* 鼠标悬停时的颜色 */
+.review-btn:hover {
+  background-color: #a85700 !important;
+  border-color: #8e6b2e !important;
+}
+
+/* 点击时的颜色 */
+.review-btn:active {
+  background-color: #ffecd7 !important;
+  border-color: #745826 !important;
+}
+
+/* 获得焦点时的颜色 */
+.review-btn:focus {
+  background-color: #d48835 !important;
+  border-color: #8e6b2e !important;
+  box-shadow: 0 0 0 2px rgba(230, 162, 60, 0.2) !important;
+}
 </style>

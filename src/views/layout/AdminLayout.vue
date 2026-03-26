@@ -9,11 +9,13 @@ const auth = useAuthStore()
 
 // 基础管理员菜单
 const baseMenus = [
-  { path: '/admin/dashboard', name: '数据仪表盘' },
+  { path: '/admin/dashboard', name: '事件统计' },
+    { path: '/admin/feeding', name: '定点投喂' },
   { path: '/admin/reports', name: '上报审核' },
   { path: '/admin/cats', name: '猫档案' },
   { path: '/admin/interventions', name: '干预工单' },
   { path: '/admin/adoptions', name: '领养申请' },
+
 ]
 
 // 超级管理员专属菜单
@@ -76,13 +78,13 @@ function logout() {
   gap: 16px; 
   padding: 12px 24px; 
   background: #000000; 
-  color: #ffd9d9;
+  color: #a89696;
 }
 .title { 
   font-weight: 600; 
   font-size: 35px;
   margin-right: 24px; 
-  color: #83f50acb; 
+  color: #e58d00; 
 }
 .nav { 
   display: flex; 
@@ -94,7 +96,7 @@ function logout() {
   text-decoration: none; 
 }
 .nav-link.router-link-active { 
-  color: #ff9a9a; 
+  color: #e58d00; 
   font-weight: 600; 
 }
 .user-info { 
@@ -103,7 +105,7 @@ function logout() {
   gap: 12px; 
 }
 .username { 
-  color: #ff9a9a; 
+  color: #e58d00; 
   font-weight: 500;
   font-size: 25px; 
 }

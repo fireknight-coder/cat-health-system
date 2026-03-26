@@ -9,6 +9,8 @@ import type { ObservationItem } from '@/api/modules/observation'
 
 const list = ref<CatItem[]>([])
 const loading = ref(false)
+const avatarWidth = ref(40)
+const avatarHeight = ref(40)
 
 // 抽屉相关
 const drawerVisible = ref(false)
@@ -111,7 +113,7 @@ async function saveName() {
     currentCat.value!.name = editName.value
     const cid = currentCat.value!.id
     const idx = list.value.findIndex(c => c.id === cid || (c as any)._id === cid)
-    if (idx >= 0) list.value[idx].name = editName.value
+    if (idx >= 0 && list.value[idx]) list.value[idx].name = editName.value
     ElMessage.success('已保存')
   } catch {
     ElMessage.error('保存失败')
@@ -125,7 +127,7 @@ async function saveStatus() {
     currentCat.value!.status = editStatus.value
     const cid = currentCat.value!.id
     const idx = list.value.findIndex(c => c.id === cid || (c as any)._id === cid)
-    if (idx >= 0) list.value[idx].status = editStatus.value
+    if (idx >= 0 && list.value[idx]) list.value[idx].status = editStatus.value
     ElMessage.success('状态已更新')
   } catch {
     ElMessage.error('保存失败')
@@ -183,12 +185,21 @@ async function savePhotos() {
   if (!currentCat.value || newPhotos.value.length === 0) return
   try {
     const currentImages = currentCat.value.images || []
+    const newImages = [...newPhotos.value, ...currentImages]
+    
+    console.log('保存前的images:', newPhotos.value)
+    console.log('合并后的images:', newImages)
+    
     await updateCat(currentCat.value.id, {
-      images: [...currentImages, ...newPhotos.value],
-      avatar: currentImages.length === 0 ? newPhotos.value[0] : currentCat.value.avatar
+      images: newImages,
+      avatar: newPhotos.value[0]
     })
-    currentCat.value.images = [...currentImages, ...newPhotos.value]
-    if (!currentCat.value.avatar) currentCat.value.avatar = newPhotos.value[0]
+    
+    currentCat.value.images = newImages
+    currentCat.value.avatar = newPhotos.value[0]
+    
+    console.log('保存后的currentCat.images:', currentCat.value.images)
+    
     newPhotos.value = []
     photoFileList.value = []
     showPhotoForm.value = false
@@ -205,6 +216,19 @@ onMounted(load)
   <div class="page">
     <h2>🐱 猫档案列表</h2>
     <el-table v-loading="loading" :data="list" stripe>
+
+<el-table-column label="照片" width="70">
+  <template #default="{ row }">
+    <img 
+      v-if="(row as any).avatar || (row as any).images?.[0]" 
+      :src="(row as any).avatar || (row as any).images?.[0]" 
+      class="table-avatar"
+      :style="{ width: avatarWidth + 'px', height: avatarHeight + 'px' }"
+    />
+    <span v-else class="no-avatar">🐱</span>
+  </template>
+</el-table-column>
+
       <el-table-column prop="catId" label="ID卡号" min-width="100">
         <template #default="{ row }">
           <span class="cat-id">{{ (row as any).catId || row.id }}</span>
@@ -255,11 +279,22 @@ onMounted(load)
               <span class="label">📷 照片：</span>
               <el-button size="small" @click="showPhotoForm = !showPhotoForm">{{ showPhotoForm ? '取消' : '+ 添加' }}</el-button>
             </div>
-            <div v-if="currentCat.images?.length" class="photo-grid">
-              <div v-for="(img, i) in currentCat.images" :key="'img'+i" class="photo-item">
-                <img :src="img" />
-              </div>
-            </div>
+            <div v-if="currentCat.images?.length" class="photo-display">
+  <!-- 第一张作为大图 -->
+<<div class="main-photo">
+    <img 
+    v-if="currentCat.images && currentCat.images.length > 0 && !currentCat.images[0]?.includes('placeholder')" 
+    :src="currentCat.images[0]" 
+  />
+  <div v-else class="no-img">暂无照片，点击上方添加</div>
+</div>
+  <!-- 后续照片作为缩略图 -->
+<div v-if="currentCat.images && currentCat.images.length > 1" class="photo-grid">
+    <div v-for="(img, i) in currentCat.images.slice(1)" :key="'img'+i" class="photo-item">
+      <img :src="img" />
+    </div>
+  </div>
+</div>
             <el-empty v-else description="暂无照片" :image-size="60" />
             
             <div v-if="showPhotoForm" class="photo-upload">
@@ -337,14 +372,14 @@ onMounted(load)
           <div v-if="obsLoading" class="loading">加载中...</div>
           <el-empty v-else-if="observations.length === 0" description="暂无记录" :image-size="40" />
           <div v-else class="obs-list">
-            <div v-for="obs in observations" :key="obs._id" class="obs-item" :class="{ important: obs.isImportant }">
+            <div v-for="obs in observations" :key="(obs as any)._id" class="obs-item" :class="{ important: obs.isImportant }">
               <div class="obs-header">
                 <el-tag :type="(obs as any).isUserRecord ? 'warning' : 'success'" size="small">
                   {{ (obs as any).isUserRecord ? '用户提交' : '管理员记录' }}
                 </el-tag>
                 <el-tag :type="getTypeColor(obs.type)" size="small">{{ typeOptions.find(t => t.value === obs.type)?.label || obs.type }}</el-tag>
                 <span class="obs-time">{{ obs.observedAt }}</span>
-                <el-button type="danger" link size="small" @click="removeObservation(obs._id)">删除</el-button>
+                <el-button type="danger" link size="small" @click="removeObservation((obs as any)._id)">删除</el-button>
               </div>
               <div class="obs-content">{{ obs.content }}</div>
             </div>
@@ -382,4 +417,45 @@ onMounted(load)
 .obs-time { color: #909399; font-size: 12px; flex: 1; }
 .obs-content { color: #606266; line-height: 1.5; white-space: pre-wrap; }
 .loading { text-align: center; padding: 20px; color: #909399; }
+.photo-display {
+  margin-top: 12px;
+}
+.main-photo {
+  width: 100%;
+  height: 250px;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.main-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #f5f7fa;
+}
+.photo-grid { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 8px; 
+}
+.photo-item { 
+  width: 60px; 
+  height: 60px; 
+  border-radius: 6px; 
+  overflow: hidden; 
+}
+.photo-item img { 
+  width: 100%; 
+  height: 100%; 
+  object-fit: cover; 
+}
+.table-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+.no-avatar {
+  font-size: 20px;
+}
 </style>

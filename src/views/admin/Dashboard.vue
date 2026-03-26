@@ -137,7 +137,7 @@ onMounted(async () => {
 
 <template>
   <div class="dashboard-container">
-    <h2>数据仪表盘</h2>
+    <h2>管理员工作统计</h2>
     
     <div v-if="loading" class="loading">
       数据加载中...
@@ -204,5 +204,10 @@ onMounted(async () => {
   text-align: center;
   padding: 40px;
   color: #999;
+}
+h2 {
+  color: #dea242;
+  margin-bottom: 50px;
+  font-size:30px
 }
 </style>
