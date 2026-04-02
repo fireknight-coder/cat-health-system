@@ -1,0 +1,126 @@
+:root {
+  --font-ui: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-display: "Palatino Linotype", "STKaiti", "KaiTi", serif;
+
+  --bg-base: #f7efe2;
+  --bg-surface: #fffcf6;
+  --bg-elevated: #fff7ec;
+  --ink-primary: #4b392a;
+  --ink-secondary: #7d624b;
+  --line-soft: #ead9c5;
+  --brand-main: #c98649;
+  --brand-deep: #9b6130;
+
+  font-family: var(--font-ui);
+  line-height: 1.56;
+  font-weight: 400;
+  color: var(--ink-primary);
+  background-color: var(--bg-base);
+
+  --el-color-primary: #c98649;
+  --el-color-primary-light-3: #d89f6a;
+  --el-color-primary-light-7: #e9c79f;
+  --el-color-primary-light-9: #f7ebdf;
+  --el-color-primary-dark-2: #a76f3d;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+a {
+  font-weight: 600;
+  color: #7a4f2d;
+  text-decoration: inherit;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #55341d;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  position: relative;
+  color: var(--ink-primary);
+  background:
+    radial-gradient(circle at 8% 4%, rgba(255, 255, 255, 0.8), transparent 30%),
+    radial-gradient(circle at 92% 10%, rgba(255, 236, 214, 0.7), transparent 34%),
+    radial-gradient(circle at 24% 88%, rgba(243, 215, 184, 0.5), transparent 34%),
+    linear-gradient(165deg, #fdf7ed 0%, #f7ecdc 46%, #f2e4d2 100%);
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  background-image: radial-gradient(rgba(131, 91, 54, 0.1) 0.7px, transparent 0.7px);
+  background-size: 9px 9px;
+  z-index: -1;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--font-display);
+  letter-spacing: 0.02em;
+  color: #4f3928;
+}
+
+#app {
+  min-height: 100vh;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+  animation: app-enter 0.45s ease;
+}
+
+.el-card,
+.el-dialog {
+  border-radius: 16px;
+  border-color: var(--line-soft);
+  box-shadow: 0 10px 28px rgba(106, 73, 45, 0.12);
+}
+
+.el-input__wrapper,
+.el-textarea__inner {
+  border-radius: 12px;
+}
+
+.el-button--primary {
+  background: linear-gradient(145deg, #d99a5f, #b9763f);
+  border-color: #bd7d47;
+}
+
+.el-button--primary:hover {
+  background: linear-gradient(145deg, #e2aa74, #c18047);
+  border-color: #c48853;
+}
+
+@keyframes app-enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
