@@ -70,15 +70,15 @@ function logout() {
   min-height: 100vh; 
   display: flex; 
   flex-direction: column; 
-  background: #00641196; 
+  background: #ffffff; 
 }
 .header {
   display: flex; 
   align-items: center; 
   gap: 16px; 
   padding: 12px 24px; 
-  background: #000000; 
-  color: #a89696;
+  background: #C0C0C0; 
+  color: #C0C0C0;
 }
 .title { 
   font-weight: 600; 
@@ -92,7 +92,7 @@ function logout() {
   flex: 1; 
 }
 .nav-link { 
-  color: #46a20d; 
+  color: #ffffff; 
   text-decoration: none; 
 }
 .nav-link.router-link-active { 
