@@ -1,0 +1,281 @@
+import express from 'express'
+import fs from 'fs'
+import path from 'path'
+import { exec } from 'child_process'
+
+import { authenticateToken, requireAdmin } from '../middleware/auth.js'
+import { catUpload } from '../middleware/upload.js'
+
+const router = express.Router()
+
+const PYTHON_SCRIPT = path.resolve(process.cwd(), '..', 'cat_p_v', 'cat101', 'cat_reid_prototype.py')
+const CAT_ROOT_DIR = path.resolve(process.cwd(), '..', 'cat_p_v', 'cat101')
+const PROTOTYPE_SAVE_DIR = path.resolve(process.cwd(), '..', 'cat_p_v', 'cat101', 'cat_prototypes')
+const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.bmp', '.webp', '.JPG', '.JPEG', '.PNG'])
+const PREFERRED_FIRST_IMAGE = /^1\s*\(1\)\.(jpg|jpeg|png|bmp|webp)$/i
+const WINDOWS_PYTHON_CANDIDATES = [
+  { command: process.env.PYTHON_EXECUTABLE, argsPrefix: [] },
+  { command: process.env.CONDA_PYTHON_EXE, argsPrefix: [] },
+  { command: 'D:\\miniconda3\\python.exe', argsPrefix: [] },
+  { command: 'C:\\Windows\\py.exe', argsPrefix: ['-3'] },
+  { command: 'python', argsPrefix: [] },
+  { command: 'py', argsPrefix: ['-3'] },
+].filter((item) => item.command)
+
+function getFirstCatImage(catId) {
+  if (!catId) return null
+  const catDir = path.join(CAT_ROOT_DIR, catId)
+  if (!fs.existsSync(catDir)) return null
+
+  const imageFiles = fs.readdirSync(catDir)
+    .filter((name) => IMAGE_EXTS.has(path.extname(name)))
+
+  const preferredImage = imageFiles.find((name) => PREFERRED_FIRST_IMAGE.test(name))
+  const firstImage = preferredImage || imageFiles.sort((a, b) => a.localeCompare(b, 'en')).at(0)
+
+  if (!firstImage) return null
+  return {
+    fileName: firstImage,
+    relativeUrl: `/api/cat-reid/matched-image/${encodeURIComponent(catId)}`,
+  }
+}
+
+function resolveMatchedCatImagePath(catId) {
+  if (!catId) return null
+  const normalizedCatId = String(catId).trim()
+  if (!normalizedCatId) return null
+
+  const catDir = path.join(CAT_ROOT_DIR, normalizedCatId)
+  if (!fs.existsSync(catDir)) return null
+
+  const imageFiles = fs.readdirSync(catDir)
+    .filter((name) => IMAGE_EXTS.has(path.extname(name)))
+
+  if (imageFiles.length === 0) return null
+
+  const preferredImage = imageFiles.find((name) => PREFERRED_FIRST_IMAGE.test(name))
+  const firstImage = preferredImage || imageFiles.sort((a, b) => a.localeCompare(b, 'en')).at(0)
+  if (!firstImage) return null
+
+  return {
+    fileName: firstImage,
+    absolutePath: path.join(catDir, firstImage),
+  }
+}
+
+function parsePythonOutput(stdout) {
+  const bestCatMatch = stdout.match(/最高相似猫ID\s*:\s*([^\r\n]+)/)
+  const bestScoreMatch = stdout.match(/最高相似度\s*:\s*([0-9.]+)/)
+  const thresholdMatch = stdout.match(/建议阈值\s*:\s*([0-9.]+)/)
+  const decisionMatch = stdout.match(/最终判定\s*:\s*([^\r\n]+)/)
+
+  const rawDecision = decisionMatch?.[1]?.trim() ?? ''
+  if (!rawDecision) {
+    throw new Error(`Unable to parse Python output: ${stdout}`)
+  }
+
+  const isOldCat = rawDecision.includes('已知猫')
+
+  return {
+    decision: isOldCat ? 'old_cat' : 'new_cat',
+    label: isOldCat ? '判定为老猫' : '判定为新猫',
+    bestCatId: bestCatMatch?.[1]?.trim() || undefined,
+    score: bestScoreMatch?.[1] ? Number(bestScoreMatch[1]) : undefined,
+    threshold: thresholdMatch?.[1] ? Number(thresholdMatch[1]) : undefined,
+    rawDecision,
+  }
+}
+
+function getPythonRuntimes() {
+  const runtimes = []
+
+  for (const candidate of WINDOWS_PYTHON_CANDIDATES) {
+    const isAbsoluteExe = /^[a-zA-Z]:\\/.test(candidate.command)
+    if (isAbsoluteExe && !fs.existsSync(candidate.command)) {
+      continue
+    }
+
+    runtimes.push(candidate)
+  }
+
+  return runtimes
+}
+
+function toPowerShellLiteral(value) {
+  return `'${String(value).replace(/'/g, "''")}'`
+}
+
+function isRuntimeUnavailable(code, stderr, runtimeCommand) {
+  const text = `${stderr || ''}`.toLowerCase()
+  const runtimeText = String(runtimeCommand || '').toLowerCase()
+
+  return (
+    code === 9009 ||
+    text.includes('is not recognized') ||
+    text.includes('commandnotfoundexception') ||
+    text.includes('could not be found') ||
+    (runtimeText && text.includes(runtimeText) && text.includes('not recognized'))
+  )
+}
+
+function runCatReid(queryImagePath) {
+  return new Promise((resolve, reject) => {
+    const pythonRuntimes = getPythonRuntimes()
+    const baseArgs = [
+      PYTHON_SCRIPT,
+      '--root_dir',
+      CAT_ROOT_DIR,
+      '--query',
+      queryImagePath,
+      '--save_dir',
+      PROTOTYPE_SAVE_DIR,
+    ]
+
+    console.log('[cat-reid] launching python script')
+    console.log(`[cat-reid] script: ${PYTHON_SCRIPT}`)
+    console.log(`[cat-reid] query image: ${queryImagePath}`)
+
+    const tryExec = (index) => {
+      if (index >= pythonRuntimes.length) {
+        reject(new Error('Unable to start Python process: no usable python runtime was found'))
+        return
+      }
+
+      const runtime = pythonRuntimes[index]
+      const args = [...runtime.argsPrefix, ...baseArgs]
+      const psCommand = `& ${toPowerShellLiteral(runtime.command)} ${args.map(toPowerShellLiteral).join(' ')}`
+
+      console.log(`[cat-reid] trying python runtime: ${runtime.command}`)
+      console.log(`[cat-reid] python args: ${args.join(' ')}`)
+      console.log(`[cat-reid] powershell command: ${psCommand}`)
+
+      const child = exec(
+        `powershell -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command "${psCommand.replace(/"/g, '\\"')}"`,
+        {
+          cwd: CAT_ROOT_DIR,
+          env: {
+            ...process.env,
+            HF_HUB_OFFLINE: '1',
+            TRANSFORMERS_OFFLINE: '1',
+            PYTHONIOENCODING: 'utf-8',
+            PYTHONUNBUFFERED: '1',
+          },
+          windowsHide: true,
+          maxBuffer: 20 * 1024 * 1024,
+        },
+      )
+
+      let stdout = ''
+      let stderr = ''
+      let handled = false
+
+      child.stdout.on('data', (chunk) => {
+        const text = chunk.toString()
+        stdout += text
+        process.stdout.write(`[cat-reid stdout] ${text}`)
+      })
+
+      child.stderr.on('data', (chunk) => {
+        const text = chunk.toString()
+        stderr += text
+        process.stderr.write(`[cat-reid stderr] ${text}`)
+      })
+
+      child.on('error', (error) => {
+        if (handled) return
+        handled = true
+
+        if (error.code === 'ENOENT') {
+          console.warn(`[cat-reid] python runtime not available: ${runtime.command}`)
+          tryExec(index + 1)
+          return
+        }
+
+        console.error('[cat-reid] failed to start python process:', error)
+        reject(error)
+      })
+
+      child.on('close', (code) => {
+        if (handled) return
+        handled = true
+
+        console.log(`[cat-reid] python exited with code ${code}`)
+
+        if (stderr) {
+          console.error(`[cat-reid] stderr summary: ${stderr}`)
+        }
+
+        if (isRuntimeUnavailable(code, stderr, runtime.command)) {
+          console.warn(`[cat-reid] python runtime not available: ${runtime.command}`)
+          tryExec(index + 1)
+          return
+        }
+
+        if (code !== 0) {
+          reject(new Error(stderr || stdout || `Python exited with code ${code}`))
+          return
+        }
+
+        try {
+          const parsed = parsePythonOutput(stdout)
+          console.log('[cat-reid] parsed result:', parsed)
+          resolve(parsed)
+        } catch (error) {
+          console.error('[cat-reid] failed to parse python output')
+          reject(error)
+        }
+      })
+    }
+
+    tryExec(0)
+  })
+}
+
+router.get('/matched-image/:catId', (req, res) => {
+  try {
+    const matchedImage = resolveMatchedCatImagePath(req.params.catId)
+    if (!matchedImage) {
+      return res.status(404).json({ error: 'Matched cat image not found' })
+    }
+
+    res.sendFile(matchedImage.absolutePath)
+  } catch (error) {
+    console.error('matched cat image failed:', error)
+    res.status(500).json({ error: error.message || 'Failed to load matched cat image' })
+  }
+})
+
+router.post('/identify', authenticateToken, requireAdmin, catUpload.single('image'), async (req, res) => {
+  try {
+    console.log('[cat-reid] /identify request received')
+
+    if (!req.file) {
+      console.warn('[cat-reid] request rejected: no uploaded file')
+      return res.status(400).json({
+        decision: 'new_cat',
+        label: '请先上传图片',
+      })
+    }
+
+    console.log(`[cat-reid] uploaded file path: ${req.file.path}`)
+    const result = await runCatReid(req.file.path)
+    const matchedCatImage = getFirstCatImage(result.bestCatId)
+
+    console.log('[cat-reid] sending response to frontend')
+    res.json({
+      ...result,
+      imageUrl: `${req.protocol}://${req.get('host')}/uploads/cats/${req.file.filename}`,
+      matchedCatImageUrl: matchedCatImage ? `${req.protocol}://${req.get('host')}${matchedCatImage.relativeUrl}` : undefined,
+      matchedCatImageName: matchedCatImage?.fileName,
+    })
+  } catch (error) {
+    console.error('cat reid failed:', error)
+    res.status(500).json({
+      decision: 'new_cat',
+      label: '识别失败',
+      error: error.message || 'Cat re-identification failed',
+    })
+  }
+})
+
+export default router

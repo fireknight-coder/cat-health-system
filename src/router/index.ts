@@ -39,6 +39,7 @@ const router = createRouter({
         { path: 'reports', name: 'ReportQueue', component: () => import('@/views/admin/ReportQueue.vue') },
         { path: 'reports/:id', name: 'ReportReview', component: () => import('@/views/admin/ReportReview.vue') },
         { path: 'cats', name: 'CatList', component: () => import('@/views/admin/CatList.vue') },
+        { path: 'cat-reid', name: 'CatReid', component: () => import('@/views/admin/CatReidCompactScreen.vue') },
         { path: 'cat/:id', name: 'UserCatDetail', component: () => import('@/views/user/CatDetail.vue') },
         { path: 'feeding', name: 'FeedingDetection', component: () => import('@/views/admin/FeedingDetection.vue') },
         { path: 'interventions', name: 'InterventionList', component: () => import('@/views/admin/InterventionList.vue') },

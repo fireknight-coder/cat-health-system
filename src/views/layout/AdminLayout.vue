@@ -15,6 +15,7 @@ const baseMenus = [
     { path: '/admin/feeding', name: '定点投喂' },
   { path: '/admin/reports', name: '上报审核' },
   { path: '/admin/cats', name: '猫档案' },
+  { path: '/admin/cat-reid', name: '身份识别' },
   { path: '/admin/interventions', name: '干预工单' },
   { path: '/admin/adoptions', name: '领养申请' },
   { path: '/admin/community', name: '哈基米社区' },

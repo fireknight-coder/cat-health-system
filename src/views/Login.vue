@@ -183,7 +183,7 @@ async function handleLogin() {
       dialogVisible.value = false
       
       // 计算跳转路径
-      const redirectPath = user.role === 'admin' ? '/admin' : '/'
+      const redirectPath = (user.role === 'admin' || user.role === 'superadmin') ? '/admin' : '/'
       console.log('计算跳转路径:', redirectPath)
       
       const redirect = (route.query.redirect as string) || redirectPath

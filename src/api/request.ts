@@ -19,8 +19,11 @@ request.interceptors.request.use((config) => {
 request.interceptors.response.use(
   (res) => res.data,
   (err) => {
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 || err.response?.status === 403) {
       useAuthStore().logout()
+      if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
+        window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`
+      }
     }
     return Promise.reject(err)
   }
