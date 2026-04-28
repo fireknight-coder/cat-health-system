@@ -91,8 +91,8 @@ router.get('/adoptable', async (req, res) => {
   }
 })
 
-// 获取单个猫咪
-router.get('/:id', authenticateToken, async (req, res) => {
+// 获取单个猫咪（允许游客/匿名访问）
+router.get('/:id', async (req, res) => {
   try {
     const cat = await Cat.findById(req.params.id)
     if (!cat) {

@@ -12,6 +12,17 @@ const router = createRouter({
       meta: { public: true },
     },
     {
+      path: '/guest',
+      component: () => import('@/views/layout/UserLayout.vue'),
+      meta: { role: 'guest' as Role },
+      children: [
+        { path: '', name: 'GuestHome', redirect: '/guest/adopt' },
+        { path: 'adopt', name: 'GuestAdoptList', component: () => import('@/views/user/AdoptList.vue') },
+        { path: 'adopt/:catId', name: 'GuestAdoptDetail', component: () => import('@/views/user/AdoptDetail.vue') },
+        { path: 'catsociety', name: 'GuestCommunity', component: () => import('@/views/community/Community.vue') },
+      ],
+    },
+    {
       path: '/',
       component: () => import('@/views/layout/UserLayout.vue'),
       meta: { role: 'user' as Role },
@@ -55,34 +66,43 @@ const router = createRouter({
 
 router.beforeEach((to, _from, next) => {
   const auth = useAuthStore()
-  
+
   // 公共路由直接放行
   if (to.meta.public) return next()
-  
-  // 未登录用户重定向到登录页
-  if (!auth.isLoggedIn) return next({ name: 'Login', query: { redirect: to.fullPath } })
-  
+
   const requiredRole = to.meta.role as Role | undefined
-  
-  // 如果没有角色要求，直接放行
-  if (!requiredRole) return next()
-  
-  // 检查角色权限（超级管理员可以访问所有管理功能）
-  if (requiredRole === 'superadmin' && !auth.isSuperAdmin) {
-    // 超级管理员权限不足，重定向到管理员首页
-    return next('/admin')
+
+  // 游客逻辑：无token或role为guest
+  if (auth.isGuest) {
+    // 游客只能访问游客路由（标记 role: 'guest'）
+    if (requiredRole === 'guest') {
+      return next()
+    }
+    // 尝试访问其他非公共路由，跳转到游客首页
+    return next({ name: 'GuestHome' })
   }
-  
-  if (requiredRole === 'admin' && !auth.isAdmin) {
-    // 管理员权限不足，重定向到用户首页
+
+  // 已登录用户访问游客路由，重定向到对应用户端页面
+  if (requiredRole === 'guest' && auth.isLoggedIn) {
     return next('/')
   }
-  
-  if (requiredRole === 'user' && !auth.isUser) {
-    // 用户权限不足，重定向到管理员首页
+
+  // 如果没有角色要求，直接放行（已登录用户）
+  if (!requiredRole) return next()
+
+  // 检查角色权限（超级管理员可以访问所有管理功能）
+  if (requiredRole === 'superadmin' && !auth.isSuperAdmin) {
     return next('/admin')
   }
-  
+
+  if (requiredRole === 'admin' && !auth.isAdmin) {
+    return next('/')
+  }
+
+  if (requiredRole === 'user' && !auth.isUser) {
+    return next('/admin')
+  }
+
   // 权限检查通过
   next()
 })

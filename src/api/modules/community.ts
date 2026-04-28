@@ -4,7 +4,7 @@ export interface CommunityCommentItem {
   id: string
   userId?: string
   username: string
-  userRole: 'user' | 'admin' | 'superadmin' | 'pending_admin'
+  userRole: 'user' | 'admin' | 'superadmin' | 'pending_admin' | 'guest'
   content: string
   createdAt: string
 }
@@ -13,7 +13,7 @@ export interface CommunityPostItem {
   id: string
   authorId?: string
   authorName: string
-  authorRole: 'user' | 'admin' | 'superadmin' | 'pending_admin'
+  authorRole: 'user' | 'admin' | 'superadmin' | 'pending_admin' | 'guest'
   content?: string
   images?: string[]
   videos?: string[]

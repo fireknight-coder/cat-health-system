@@ -72,7 +72,7 @@ router.post('/upload', authenticateToken, communityUpload.array('files', 9), asy
   }
 })
 
-router.get('/posts', authenticateToken, async (req, res) => {
+router.get('/posts', async (req, res) => {
   try {
     const page = Math.max(1, Number(req.query.page) || 1)
     const pageSize = Math.min(100, Math.max(1, Number(req.query.pageSize) || 20))

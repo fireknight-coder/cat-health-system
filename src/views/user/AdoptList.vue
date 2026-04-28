@@ -3,9 +3,11 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElButton, ElEmpty } from 'element-plus'
 import { getAdoptableCats, getCatById } from '@/api/modules/cat'
+import { useAuthStore } from '@/stores/auth'
 import type { CatItem } from '@/api/modules/cat'
 
 const router = useRouter()
+const auth = useAuthStore()
 const list = ref<CatItem[]>([])
 const loading = ref(false)
 const catDetails = ref<Record<string, CatItem>>({})
@@ -29,7 +31,8 @@ async function load() {
 }
 
 function goApply(catId: string) {
-  router.push({ name: 'AdoptDetail', params: { catId } })
+  const routeName = auth.isGuest ? 'GuestAdoptDetail' : 'AdoptDetail'
+  router.push({ name: routeName, params: { catId } })
 }
 
 function getCatDetail(catId: string) {

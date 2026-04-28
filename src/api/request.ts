@@ -15,12 +15,18 @@ request.interceptors.request.use((config) => {
   if (auth.token) config.headers.Authorization = `Bearer ${auth.token}`
   return config
 })
-//响应拦截器，处理所有响应
+// 响应拦截器，处理所有响应
 request.interceptors.response.use(
   (res) => res.data,
   (err) => {
-    if (err.response?.status === 401 || err.response?.status === 403) {
-      useAuthStore().logout()
+    const status = err.response?.status
+    if (status === 401 || status === 403) {
+      const auth = useAuthStore()
+      // 游客访问不需要强制跳转登录页，只提示即可
+      if (!auth.token || auth.isGuest) {
+        return Promise.reject(err)
+      }
+      auth.logout()
       if (typeof window !== 'undefined' && window.location.pathname !== '/login') {
         window.location.href = `/login?redirect=${encodeURIComponent(window.location.pathname)}`
       }

@@ -9,18 +9,33 @@ import iconUrl from '@/assets/icon.jpg'
 const router = useRouter()
 const auth = useAuthStore()
 
-const menus = [
-  { path: '/report', name: '上报流浪猫' },
-  { path: '/adopt', name: '可领养' },
-  { path: '/pets', name: '我的宠物' },
-  { path: '/catsociety', name: '哈吉米社区' },
-]
+const menus = computed(() => {
+  if (auth.isGuest) {
+    return [
+      { path: '/guest/adopt', name: '可领养' },
+      { path: '/guest/catsociety', name: '哈吉米社区' },
+    ]
+  }
+  return [
+    { path: '/report', name: '上报流浪猫' },
+    { path: '/adopt', name: '可领养' },
+    { path: '/pets', name: '我的宠物' },
+    { path: '/catsociety', name: '哈吉米社区' },
+  ]
+})
 
 // 显示用户信息
 const userDisplayName = computed(() => {
+  if (auth.isGuest) return '游客'
   return auth.isSuperAdmin ? `🛡️ ${auth.username || auth.userId}` : (auth.username || auth.userId)
 })
 
+const showLoginBtn = computed(() => auth.isGuest)
+
+
+function goToLogin() {
+  router.push('/login')
+}
 
 function logout() {
   auth.logout()
@@ -46,7 +61,8 @@ function logout() {
 
       <div class="user-info">
         <span class="username">{{ userDisplayName }}</span>
-        <el-button class="logout-btn" size="small" @click="logout">退出</el-button>
+        <el-button v-if="showLoginBtn" class="login-btn" type="primary" size="small" @click="goToLogin">注册/登录</el-button>
+        <el-button v-else class="logout-btn" size="small" @click="logout">退出</el-button>
       </div>
 
     </header>
@@ -216,6 +232,17 @@ function logout() {
   font-weight: 600;
   font-size: 14px;
   margin-right: 2px;
+}
+
+.login-btn {
+  border: 1px solid #c98649;
+  background: linear-gradient(145deg, var(--warm-accent), #b9763f);
+  color: white;
+}
+
+.login-btn:hover {
+  border-color: #d1945f;
+  background: linear-gradient(145deg, #d1945f, #c08047);
 }
 
 .logout-btn {

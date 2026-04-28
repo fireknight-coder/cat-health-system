@@ -39,6 +39,8 @@ const form = reactive({
 
 const canPublishAnnouncement = computed(() => auth.isAdmin)
 const canManagePost = computed(() => auth.isAdmin)
+const canCreatePost = computed(() => auth.canCreatePost)
+const canComment = computed(() => auth.canComment)
 const composerNeedsMedia = computed(() => composeMode.value !== 'text')
 
 const composerTitle = computed(() => {
@@ -59,6 +61,7 @@ function formatRole(role: string) {
   if (role === 'superadmin') return '超级管理员'
   if (role === 'admin') return '管理员'
   if (role === 'pending_admin') return '申请中用户'
+  if (role === 'guest') return '游客'
   return '用户'
 }
 
@@ -86,10 +89,18 @@ function toggleFabActions() {
 }
 
 function openComposer(mode: ComposeMode) {
+  if (!canCreatePost.value) {
+    ElMessage.warning('游客无法发帖，请先注册登录')
+    return
+  }
   composeMode.value = mode
   showFabActions.value = false
   composerVisible.value = true
   mediaFiles.value = []
+}
+
+function showGuestNotice() {
+  ElMessage.warning('游客无法发帖，请先注册登录')
 }
 
 function clearComposer() {
@@ -176,6 +187,12 @@ async function sendComment(post: CommunityPostItem) {
     ElMessage.warning('请先输入评论内容')
     return
   }
+
+  if (!canComment.value) {
+    ElMessage.warning('游客无法评论，请先注册登录')
+    return
+  }
+
   if (commentSubmittingId.value) return
 
   commentSubmittingId.value = post.id
@@ -293,10 +310,18 @@ onMounted(() => loadPosts('all'))
               v-model="commentDrafts[post.id]"
               :rows="1"
               type="textarea"
-              placeholder="写下你的评论..."
+              :placeholder="canComment ? '写下你的评论...' : '游客无法评论，请先注册登录...'"
+              :disabled="!canComment"
               resize="none"
             />
-            <ElButton type="primary" :loading="commentSubmittingId === post.id" @click="sendComment(post)">发送</ElButton>
+            <ElButton
+              type="primary"
+              :loading="commentSubmittingId === post.id"
+              @click="sendComment(post)"
+              :disabled="!canComment"
+            >
+              {{ canComment ? '发送' : '请登录' }}
+            </ElButton>
           </div>
         </div>
       </article>
@@ -312,7 +337,8 @@ onMounted(() => loadPosts('all'))
       </div>
     </transition>
 
-    <button class="fab-main" @click="toggleFabActions">{{ showFabActions ? '×' : '+' }}</button>
+    <button v-if="canCreatePost" class="fab-main" @click="toggleFabActions">{{ showFabActions ? '×' : '+' }}</button>
+    <button v-else class="fab-main disabled" @click="showGuestNotice" title="游客无法发帖">+</button>
 
     <el-dialog v-model="composerVisible" :title="composerTitle" width="680px" @closed="clearComposer">
       <ElInput

@@ -88,6 +88,14 @@ function openDialog() {
   Object.assign(registerForm, { username: '', password: '', confirmPassword: '', phone: '', email: '' })
 }
 
+//游客点击按钮跳转到权限缺失的用户端页面
+function handleGuestEntry() {
+  const auth = useAuthStore()
+  auth.guestLogin()
+  ElMessage.success('欢迎游客访问！部分功能需要注册登录后才能使用。')
+  router.push('/guest')
+}
+
 // API基础URL
 const API_BASE_URL = 'http://localhost:3002/api'
 
@@ -271,7 +279,10 @@ function resetForm() {
               </el-form-item>
               <el-form-item class="ma">
                 <el-button class="enter-btn" type="primary" @click="openDialog" style="width: 100%">
-                  进入系统
+                  进入
+                </el-button>
+                <el-button class="enter-btn" type="primary" @click="handleGuestEntry" style="width: 100%">
+                  游客进入
                 </el-button>
               </el-form-item>
             </el-form>
@@ -537,7 +548,8 @@ function resetForm() {
 }
 
 .ma {
-  margin-right: 0;
+  margin-right: 50px;
+  display: flex;
 }
 
 :deep(.el-radio-group) {
