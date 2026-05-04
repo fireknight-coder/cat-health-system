@@ -327,8 +327,10 @@ onMounted(load)
 </script>
 
 <template>
-  <div class="page">
+  <div class="page mobile-hide-table">
     <h2>🐱 猫档案列表</h2>
+
+    <!-- 桌面端表格 -->
     <el-table v-loading="loading" :data="list" stripe>
 
       <el-table-column label="照片" width="70">
@@ -377,6 +379,39 @@ onMounted(load)
         </template>
       </el-table-column>
     </el-table>
+
+    <!-- 移动端卡片列表 -->
+    <div class="mobile-card-list" v-loading="loading">
+      <el-card v-for="cat in list" :key="cat.id" @click="openDetail(cat)">
+        <div class="card-header">
+          <img v-if="cat.avatar" :src="cat.avatar" class="card-avatar" />
+          <div v-else class="card-avatar no-avatar-card">🐱</div>
+          <div class="card-title-wrap">
+            <div class="card-title">{{ cat.name || '未命名' }}</div>
+            <div class="card-subtitle">ID: {{ (cat as any).catId || cat.id }}</div>
+          </div>
+          <el-button type="primary" link size="small" @click.stop="openDetail(cat)">详情</el-button>
+        </div>
+        <div class="card-body">
+          <div class="card-row">
+            <span class="card-label">状态</span>
+            <el-tag size="small">{{ getCatStatusLabel(cat.status as any) }}</el-tag>
+          </div>
+          <div class="card-row">
+            <span class="card-label">健康分</span>
+            <span :class="{ 'high-score': (cat.healthScore ?? 0) >= 80 }">{{ cat.healthScore ?? '-' }}</span>
+          </div>
+          <div class="card-row">
+            <span class="card-label">发现次数</span>
+            <span>{{ cat.sightingCount ?? 0 }}次</span>
+          </div>
+          <div class="card-row" v-if="cat.adopterName">
+            <span class="card-label">领养人</span>
+            <span>{{ cat.adopterName }}</span>
+          </div>
+        </div>
+      </el-card>
+    </div>
 
     <!-- 详情抽屉 -->
     <el-drawer v-model="drawerVisible" title="猫档案详情" size="500px" :direction="'rtl'">
@@ -700,5 +735,155 @@ onMounted(load)
   place-items: center;
   color: #9e846b;
   font-size: 13px;
+}
+
+/* 移动端卡片列表样式 */
+.mobile-card-list {
+  display: none;
+}
+
+.card-title-wrap {
+  flex: 1;
+  overflow: hidden;
+}
+
+.card-subtitle {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 2px;
+}
+
+.no-avatar-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f6ecdf;
+  font-size: 24px;
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 16px;
+  }
+
+  .page h2 {
+    font-size: 18px;
+    margin-bottom: 16px;
+  }
+
+  .mobile-card-list {
+    display: block;
+  }
+
+  .mobile-card-list .el-card {
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+
+  .mobile-card-list .el-card:active {
+    transform: scale(0.98);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .card-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .card-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: #4a3a2c;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .card-body {
+    display: grid;
+    gap: 10px;
+  }
+
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .card-label {
+    color: #7d624b;
+    font-size: 13px;
+  }
+
+  /* 移动端抽屉优化 */
+  :deep(.el-drawer) {
+    width: 90% !important;
+    max-width: 400px;
+  }
+
+  .info-card,
+  .obs-card {
+    margin-bottom: 12px;
+  }
+
+  .info-row {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .info-row .label {
+    width: 65px;
+    font-size: 13px;
+  }
+
+  .main-photo {
+    height: 200px;
+  }
+
+  .photo-grid {
+    grid-template-columns: repeat(auto-fill, minmax(56px, 1fr));
+  }
+
+  .obs-form-tools {
+    flex-wrap: wrap;
+  }
+
+  .obs-header {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .obs-time {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 12px;
+  }
+
+  .card-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .card-title {
+    font-size: 15px;
+  }
+
+  .main-photo {
+    height: 180px;
+  }
 }
 </style>

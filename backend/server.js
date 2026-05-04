@@ -56,6 +56,8 @@ import dashboardRoutes from './src/routes/dashboard.js'
 import observationRoutes from './src/routes/observation.js'
 import communityRoutes from './src/routes/community.js'
 import catReidRoutes from './src/routes/catReid.js'
+import petGrowthRoutes from './src/routes/petGrowth.js'
+import petChatRoutes from './src/routes/petChat.js'
 // 路由注册
 app.use('/api/auth', authRoutes)
 app.use('/api/cats', catRoutes)
@@ -66,6 +68,8 @@ app.use('/api/dashboard', dashboardRoutes)
 app.use('/api/observations', observationRoutes)
 app.use('/api/community', communityRoutes)
 app.use('/api/cat-reid', catReidRoutes)
+app.use('/api/pet-growth', petGrowthRoutes)
+app.use('/api/pet-chat', petChatRoutes)
 
 // 健康检查
 app.get('/api/health', (req, res) => {

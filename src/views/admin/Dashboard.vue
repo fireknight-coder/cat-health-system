@@ -393,6 +393,95 @@ onMounted(async () => {
   }
 }
 
+@media (max-width: 768px) {
+  .hero h2 {
+    font-size: 22px;
+  }
+
+  .hero-sub {
+    font-size: 14px;
+  }
+
+  .hero-brief {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .brief-item {
+    padding: 10px 12px;
+  }
+
+  .brief-item span {
+    font-size: 12px;
+  }
+
+  .stats-container {
+    grid-template-columns: 1fr;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .card-head h3 {
+    font-size: 18px;
+  }
+
+  .metric-row {
+    padding: 12px;
+  }
+
+  .metric-row span {
+    font-size: 14px;
+  }
+
+  .metric-row strong {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-container {
+    padding: 4px;
+  }
+
+  .hero {
+    padding: 16px 14px;
+    border-radius: 16px;
+  }
+
+  .hero h2 {
+    font-size: 20px;
+  }
+
+  .hero-brief {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .brief-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+
+  .brief-item strong {
+    font-size: 20px;
+  }
+
+  .chip {
+    padding: 3px 8px;
+    font-size: 11px;
+  }
+
+  .card-head h3 {
+    font-size: 16px;
+  }
+
+  .metric-row strong {
+    font-size: 18px;
+  }
+}
+
 @media (max-width: 640px) {
   .dashboard-container {
     padding: 4px;

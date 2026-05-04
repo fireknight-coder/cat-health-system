@@ -3,12 +3,14 @@
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { ElButton } from 'element-plus'
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import iconUrl from '@/assets/icon.jpg'
+import MobileNavBar from '@/components/MobileNavBar.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
 
+// 根据用户角色显示不同菜单
 const menus = computed(() => {
   if (auth.isGuest) {
     return [
@@ -23,6 +25,34 @@ const menus = computed(() => {
     { path: '/catsociety', name: '哈吉米社区' },
   ]
 })
+
+// 移动端显示的菜单（游客和用户略有不同）
+const mobileNavMenus = computed(() => {
+  if (auth.isGuest) {
+    return [
+      { path: '/guest/adopt', name: '可领养' },
+      { path: '/guest/catsociety', name: '社区' },
+    ]
+  }
+  return [
+    { path: '/report', name: '上报' },
+    { path: '/adopt', name: '可领养' },
+    { path: '/pets', name: '我的' },
+    { path: '/catsociety', name: '社区' },
+  ]
+})
+
+// 当前是否是移动视图
+const isMobileView = ref(false)
+
+// 检测屏幕宽度
+function checkScreenSize() {
+  isMobileView.value = window.innerWidth < 769
+}
+
+// 初始化检测
+checkScreenSize()
+window.addEventListener('resize', checkScreenSize)
 
 // 显示用户信息
 const userDisplayName = computed(() => {
@@ -44,35 +74,45 @@ function logout() {
 </script>
 
 <template>
-  <div class="user-layout">
+  <div class="user-layout" :class="{ 'mobile-view': isMobileView }">
     <header class="header">
       <div class="brand-block">
         <div class="logo-wrap">
           <img :src="iconUrl" alt="icon" class="logo" />
         </div>
-        <div class="title-block">
+        <div class="title-block" v-show="!isMobileView">
           <span class="eyebrow">Community Cat Circle</span>
           <span class="title">社区猫管理 · 用户端</span>
         </div>
+        <span class="mobile-title" v-show="isMobileView">社区猫 · 用户端</span>
       </div>
-      <nav class="nav">
+      <nav class="nav" v-show="!isMobileView">
         <router-link v-for="m in menus" :key="m.path" :to="m.path" class="nav-link">{{ m.name }}</router-link>
       </nav>
 
-      <div class="user-info">
+      <!-- 桌面端用户信息 -->
+      <div class="user-info" v-show="!isMobileView">
         <span class="username">{{ userDisplayName }}</span>
         <el-button v-if="showLoginBtn" class="login-btn" type="primary" size="small" @click="goToLogin">注册/登录</el-button>
         <el-button v-else class="logout-btn" size="small" @click="logout">退出</el-button>
       </div>
 
+      <!-- 移动端头部用户信息 -->
+      <div class="mobile-header-user" v-show="isMobileView">
+        <span class="mobile-header-username">{{ userDisplayName }}</span>
+        <el-button v-if="showLoginBtn" class="mobile-header-btn" type="primary" size="small" @click="goToLogin">登录</el-button>
+        <el-button v-else class="mobile-header-btn logout" size="small" @click="logout">退出</el-button>
+      </div>
+
     </header>
-    <main class="main">
+    <main class="main" :class="{ 'has-mobile-nav': isMobileView }">
       <router-view v-slot="{ Component }">
         <transition name="page-fade" mode="out-in">
           <component :is="Component" />
         </transition>
       </router-view>
     </main>
+    <MobileNavBar :menus="mobileNavMenus" type="user" v-if="isMobileView" />
   </div>
 </template>
 
@@ -297,6 +337,107 @@ function logout() {
 
   .user-info {
     margin-left: auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .user-layout {
+    overflow-x: hidden;
+  }
+
+  .header {
+    padding: 10px 16px;
+    gap: 12px;
+    position: relative;
+  }
+
+  .brand-block {
+    margin-right: 0;
+    width: auto;
+    flex: 1;
+  }
+
+  .logo-wrap {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+
+  .logo {
+    border-radius: 9px;
+  }
+
+  .title-block {
+    display: none;
+  }
+
+  .mobile-title {
+    font-weight: 700;
+    font-size: 18px;
+    color: #5d4a3b;
+    flex: 1;
+  }
+
+  .nav {
+    display: none;
+  }
+
+  .user-info {
+    display: none;
+  }
+
+  .main {
+    padding: 12px;
+    padding-bottom: calc(60px + 48px + max(8px, env(safe-area-inset-bottom)));
+  }
+
+  .main.has-mobile-nav {
+    padding-bottom: calc(60px + max(8px, env(safe-area-inset-bottom)));
+  }
+
+  /* 移动端头部用户信息栏 */
+  .mobile-header-user {
+    display: flex !important;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+  }
+
+  .mobile-header-username {
+    font-size: 13px;
+    color: #5b4a3b;
+    font-weight: 600;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mobile-header-btn {
+    padding: 5px 10px;
+    min-height: 28px;
+    font-size: 12px;
+    border-radius: 12px;
+  }
+
+  .mobile-header-btn.logout {
+    border: 1px solid #d8c4ab;
+    background: linear-gradient(150deg, #fff8ef, #f2e1cf);
+    color: #5a4634;
+  }
+}
+
+@media (max-width: 480px) {
+  .header {
+    padding: 8px 12px;
+  }
+
+  .mobile-title {
+    font-size: 16px;
+  }
+
+  .main {
+    padding: 8px;
   }
 }
 

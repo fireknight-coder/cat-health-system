@@ -360,6 +360,109 @@ onMounted(() => {
 
   .field-grid {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .field-card {
+    padding: 12px 10px;
+    min-width: 0;
+  }
+
+  /* 表单在移动端垂直排列 */
+  :deep(.el-form-item) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  :deep(.el-form-item__label) {
+    width: auto !important;
+    text-align: left;
+    margin-bottom: 6px;
+    padding: 0;
+    font-size: 14px;
+  }
+
+  :deep(.el-form-item__content) {
+    margin-left: 0 !important;
+    width: 100%;
+  }
+
+  /* 位置输入框和按钮垂直排列 */
+  .location-box {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .location-box .el-input {
+    width: 100%;
+  }
+
+  .location-box .el-button {
+    width: 100%;
+    margin: 0;
+  }
+
+  /* 上传组件在移动端全宽 */
+  .media-upload {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  :deep(.el-upload--picture-card) {
+    width: 80px;
+    height: 80px;
+  }
+
+  :deep(.el-upload-list--picture-card .el-upload-list__item) {
+    width: 80px;
+    height: 80px;
+  }
+
+  /* 提交按钮全宽 */
+  .submit-btn {
+    width: 100%;
+    min-width: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .page {
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .tech-title {
+    font-size: 20px;
+  }
+
+  .admin-apply-btn {
+    width: 100%;
+  }
+
+  .field-card {
+    padding: 10px 8px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 18px;
+  }
+
+  .tech-title {
+    font-size: 24px;
+  }
+
+  .field-grid {
+    grid-template-columns: 1fr;
   }
 }
 </style>

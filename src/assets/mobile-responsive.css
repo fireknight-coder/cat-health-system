@@ -1,0 +1,160 @@
+/* 移动端表格和列表通用样式 */
+
+/* 默认隐藏移动端卡片列表，显示表格 */
+.mobile-card-view {
+  display: none;
+}
+
+/* 平板及以下屏幕：简化的表格 */
+@media (max-width: 1024px) {
+  .responsive-table .el-table {
+    font-size: 13px;
+  }
+
+  .responsive-table .el-table-column--default .cell {
+    padding: 0 4px;
+  }
+}
+
+/* 手机端：完全隐藏表格，显示卡片 */
+@media (max-width: 768px) {
+  .responsive-table .el-table {
+    display: none;
+  }
+
+  .responsive-table .mobile-card-view {
+    display: block;
+  }
+
+  /* 通用卡片样式 */
+  .mobile-card {
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #f0e6dc;
+    box-shadow: 0 4px 12px rgba(106, 73, 45, 0.08);
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+
+  .mobile-card-header {
+    background: linear-gradient(135deg, #fffaf4 0%, #f9f1e8 100%);
+    border-bottom: 1px solid #f0e6dc;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .mobile-card-header .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #4a3a2c;
+  }
+
+  .mobile-card-header .card-subtitle {
+    font-size: 12px;
+    color: #909399;
+    margin-top: 2px;
+  }
+
+  .mobile-card-body {
+    padding: 12px 16px;
+  }
+
+  .mobile-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f7f2ed;
+  }
+
+  .mobile-card-row:last-child {
+    border-bottom: none;
+  }
+
+  .mobile-card-row .label {
+    color: #7d624b;
+    font-size: 13px;
+  }
+
+  .mobile-card-row .value {
+    font-size: 14px;
+    color: #4a3a2c;
+    font-weight: 600;
+    text-align: right;
+    flex: 1;
+    margin-left: 8px;
+  }
+
+  .mobile-card-footer {
+    padding: 12px 16px;
+    border-top: 1px solid #f0e6dc;
+    background: #fdfcfa;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+  }
+
+  /* 状态标签在卡片中更小 */
+  .mobile-card .el-tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    height: auto;
+  }
+
+  /* 图片在卡片中 */
+  .mobile-card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e3d2bc;
+  }
+
+  /* 分页在移动端居中 */
+  .el-pagination {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .el-pagination .el-pagination__total,
+  .el-pagination .el-pagination__jump,
+  .el-pagination .el-pagination__sizes {
+    display: none;
+  }
+}
+
+/* 小屏手机特殊处理 */
+@media (max-width: 480px) {
+  .mobile-card {
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+
+  .mobile-card-header {
+    padding: 12px 14px;
+  }
+
+  .mobile-card-header .card-title {
+    font-size: 15px;
+  }
+
+  .mobile-card-body {
+    padding: 10px 14px;
+  }
+
+  .mobile-card-row {
+    padding: 6px 0;
+  }
+
+  .mobile-card-footer {
+    padding: 10px 14px;
+  }
+
+  .mobile-card-avatar {
+    width: 40px;
+    height: 40px;
+  }
+}

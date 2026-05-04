@@ -50,6 +50,16 @@ a:hover {
   color: #55341d;
 }
 
+/* 移动端安全区域适配（针对 notch 刘海屏） */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
 body {
   margin: 0;
   min-width: 320px;
@@ -112,6 +122,264 @@ h4 {
 .el-button--primary:hover {
   background: linear-gradient(145deg, #e2aa74, #c18047);
   border-color: #c48853;
+}
+
+/* 移动端触摸优化：增大点击区域 */
+@media (max-width: 768px) {
+  .el-button {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 15px;
+  }
+
+  .el-button--small {
+    min-height: 36px;
+    font-size: 13px;
+  }
+
+  .el-button--large {
+    min-height: 50px;
+    font-size: 16px;
+  }
+
+  .el-input__inner,
+  .el-textarea__inner {
+    min-height: 44px;
+    font-size: 16px; /* 防止 iOS 缩放 */
+  }
+
+  .el-input__wrapper {
+    padding: 8px 12px;
+  }
+
+  .el-form-item__label {
+    font-size: 15px;
+  }
+
+  .el-radio__label,
+  .el-checkbox__label {
+    font-size: 15px;
+  }
+
+  .el-select .el-input__inner {
+    min-height: 44px;
+  }
+
+  .el-card {
+    margin-bottom: 12px;
+  }
+
+  .el-table {
+    font-size: 14px;
+  }
+
+  .el-dialog {
+    margin: 16px auto;
+    width: calc(100vw - 32px) !important;
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+  }
+
+  .el-dialog__body {
+    padding: 16px;
+  }
+
+  .el-drawer {
+    width: 85% !important;
+  }
+
+  .el-pagination {
+    justify-content: center;
+  }
+
+  .el-pagination .el-input__inner {
+    min-height: 28px;
+  }
+
+  /* 底部导航栏安全区域 */
+  .mobile-nav-bar {
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+
+  .has-mobile-nav {
+    padding-bottom: calc(60px + env(safe-area-inset-bottom));
+  }
+}
+
+/* 小屏手机特殊处理 */
+@media (max-width: 480px) {
+  .el-card {
+    border-radius: 12px;
+  }
+
+  .el-button {
+    padding: 10px 16px;
+  }
+
+  h1 { font-size: 20px; }
+  h2 { font-size: 18px; }
+  h3 { font-size: 16px; }
+  h4 { font-size: 15px; }
+}
+
+/* 表格在移动端的横向滚动适配 */
+.el-table {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .el-table {
+    font-size: 13px;
+  }
+
+  .el-table .cell {
+    white-space: nowrap;
+  }
+
+  .el-table th {
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .el-table td,
+  .el-table th {
+    padding: 8px 6px;
+  }
+
+  .el-table__header-cell .cell {
+    padding: 0 4px;
+  }
+
+  .el-table__body-cell .cell {
+    padding: 0 4px;
+  }
+
+  .el-table .el-tag {
+    font-size: 12px;
+    padding: 1px 6px;
+    height: auto;
+  }
+}
+
+/* 移动端卡片式布局（用于替代小屏下的表格显示） */
+.mobile-card-list {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-card-list {
+    display: block;
+  }
+
+  .mobile-card-list .el-card {
+    margin-bottom: 12px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(106, 73, 45, 0.08);
+  }
+
+  .mobile-card-list .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f0e6dc;
+    margin-bottom: 12px;
+  }
+
+  .mobile-card-list .card-title {
+    font-weight: 700;
+    font-size: 16px;
+    color: #4a3a2c;
+    flex: 1;
+  }
+
+  .mobile-card-list .card-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e3d2bc;
+  }
+
+  .mobile-card-list .card-body {
+    display: grid;
+    gap: 8px;
+  }
+
+  .mobile-card-list .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .mobile-card-list .card-label {
+    color: #7d624b;
+    font-size: 13px;
+  }
+
+  .mobile-card-list .card-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: #4a3a2c;
+  }
+
+  .mobile-card-list .card-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f0e6dc;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  /* 在移动端隐藏大表格，显示卡片列表 */
+  .mobile-hide-table .el-table {
+    display: none;
+  }
+
+  .mobile-hide-table .mobile-card-list {
+    display: block;
+  }
+}
+
+/* 抽屉在移动端的优化 */
+@media (max-width: 768px) {
+  .el-drawer {
+    width: 85% !important;
+    max-width: 380px;
+  }
+
+  .el-drawer .el-drawer__header {
+    margin-bottom: 12px;
+    padding: 16px;
+    font-size: 16px;
+  }
+
+  .el-drawer .el-drawer__body {
+    padding: 12px;
+  }
+}
+
+/* 表单卡片在移动端的优化 */
+@media (max-width: 768px) {
+  .el-form .el-form-item {
+    margin-bottom: 16px;
+  }
+
+  .el-form-item__label {
+    font-size: 14px;
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+
+  .el-form-item__content {
+    font-size: 15px;
+  }
+
+  .el-select,
+  .el-date-picker,
+  .el-cascader {
+    width: 100%;
+  }
 }
 
 @keyframes app-enter {
