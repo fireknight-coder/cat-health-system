@@ -153,7 +153,18 @@ onMounted(loadCat)
 </template>
 
 <style scoped>
-.page { background: #f5f7fa; padding: 20px; min-height: 100vh; }
+.page {
+  position: relative;
+  min-height: calc(100vh - 120px);
+  padding: 16px 16px 120px;
+  border-radius: 22px;
+  border: 1px solid #f2dfc9;
+  box-shadow: 0 14px 32px rgba(118, 84, 52, 0.12);
+  background:
+    radial-gradient(circle at 8% 8%, rgba(255, 228, 201, 0.56), transparent 42%),
+    radial-gradient(circle at 92% 14%, rgba(255, 240, 220, 0.55), transparent 38%),
+    linear-gradient(180deg, #fffdf9 0%, #fff8ef 100%);
+}
 .back-btn { margin-bottom: 16px; }
 .loading, .empty { padding: 40px; text-align: center; }
 .detail-content { max-width: 800px; margin: 0 auto; }
